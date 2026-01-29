@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>联系我 - 我的像素世界</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* 联系页面特定样式 */
+        .contact-form {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 24px;
+            border: 2px solid var(--border);
+            background: var(--bg-primary);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            box-shadow: 4px 4px 0 var(--border-light);
+        }
+
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 12px 24px;
+            border: 2px solid var(--border);
+            background: var(--accent);
+            color: var(--bg-primary);
+            font-family: var(--font-main);
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .form-button:hover {
+            background: var(--accent-hover);
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 var(--text-secondary);
+        }
+
+        .contact-info {
+            text-align: center;
+            margin: 32px 0;
+            padding: 24px;
+            border: 2px solid var(--border);
+            background: var(--bg-secondary);
+        }
+
+        .contact-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .contact-method {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .contact-icon {
+            font-size: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .contact-form {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="avatar">
+                <img src="avatar.png" alt="头像" width="80" height="80">
+            </div>
+            <h1 class="site-title">联系我</h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="about.html" class="nav-link">关于我</a>
+                <a href="contact.html" class="nav-link active">联系</a>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <section class="contact">
+                <h2 class="section-title">给我留言</h2>
+
+                <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <label class="form-label" for="name">你的名字</label>
+                        <input type="text" id="name" name="name" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="email">邮箱地址</label>
+                        <input type="email" id="email" name="email" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="subject">主题</label>
+                        <input type="text" id="subject" name="subject" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="message">留言内容</label>
+                        <textarea id="message" name="message" class="form-textarea" required></textarea>
+                    </div>
+
+                    <button type="submit" class="form-button">发送消息</button>
+                </form>
+
+                <div class="divider"></div>
+
+                <div class="contact-info">
+                    <h3>其他联系方式</h3>
+                    <div class="contact-methods">
+                        <div class="contact-method">
+                            <span class="contact-icon">📧</span>
+                            <span>pixel-blog@example.com</span>
+                        </div>
+                        <div class="contact-method">
+                            <span class="contact-icon">🐙</span>
+                            <span>github.com/yourusername</span>
+                        </div>
+                        <div class="contact-method">
+                            <span class="contact-icon">🐦</span>
+                            <span>@yourusername</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="divider"></div>
+            <p>&copy; 2024 我的像素博客. All rights reserved.</p>
+            <p class="footer-note">使用像素构建，用心创作</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
