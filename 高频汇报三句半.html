@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高频汇报三句半</title>
+<style>
+  :root {
+    --bg: #fafaf8;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --muted: #666;
+    --accent: #2563eb;
+    --accent-light: #eff6ff;
+    --border: #e5e5e5;
+    --red: #dc2626;
+    --green: #16a34a;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 15px;
+    padding: 2rem 1rem 6rem;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .hero {
+    text-align: center;
+    padding: 3rem 1rem 2.5rem;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+  }
+  .hero .source {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .framework-box {
+    background: linear-gradient(135deg, #1e3a5f, #2563eb);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 1.5rem 2rem;
+    text-align: center;
+    margin: 1.5rem 0 2.5rem;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.25);
+  }
+  .framework-box .label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .framework-box .arrows {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+  }
+  .framework-box .arrows span {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    padding: 0.2rem 0.8rem;
+    border-radius: 6px;
+    margin: 0 0.2rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 2.5rem 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--accent);
+    display: inline-block;
+  }
+  h2.section-num {
+    background: var(--accent);
+    color: #fff;
+    border-radius: 6px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.85rem;
+    margin-right: 0.5rem;
+  }
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.5rem;
+    color: var(--text);
+  }
+  .principle {
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    font-size: 0.95rem;
+  }
+  .principle strong { color: var(--accent); }
+  p { margin: 0.5rem 0; }
+  ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+  li { margin: 0.25rem 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  th {
+    background: #f0f0f0;
+    font-weight: 600;
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  .wrong { color: var(--red); }
+  .wrong::before { content: "❌ "; }
+  .right { color: var(--green); }
+  .right::before { content: "✅ "; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+  }
+
+  .scenario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    box-shadow: var(--shadow);
+  }
+  .scenario h3 { margin-top: 0; }
+  .scenario .bg { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.75rem; }
+  .quote {
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    font-size: 0.92rem;
+  }
+  .quote.low { background: #fff5f5; border-left: 3px solid var(--red); }
+  .quote.high { background: #f0fdf4; border-left: 3px solid var(--green); }
+  .quote-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    display: block;
+  }
+  .quote.low .quote-label { color: var(--red); }
+  .quote.high .quote-label { color: var(--green); }
+
+  .tip {
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+  .tip strong { color: #92400e; }
+
+  .summary-box {
+    background: linear-gradient(135deg, #1e3a5f, #1e40af);
+    color: #fff;
+    border-radius: 14px;
+    padding: 2rem;
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 1.05rem;
+    line-height: 1.9;
+    box-shadow: 0 4px 20px rgba(30,64,175,0.3);
+  }
+  .summary-box .emoji { font-size: 2rem; margin-bottom: 0.5rem; }
+  .summary-box blockquote {
+    border: none;
+    padding: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e0e7ff;
+  }
+
+  pre {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-family: "Cascadia Code", "Fira Code", monospace;
+    font-size: 0.88rem;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+  code {
+    background: #f0f0f0;
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+    font-size: 0.88em;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+
+  .badge-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 0.5rem 0;
+  }
+  .badge {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 20px;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>📋 高频汇报三句半</h1>
+  <p class="source">来自脱不花老师的管理沟通工具</p>
+</div>
+
+<div class="framework-box">
+  <div class="label">核心框架</div>
+  <div class="arrows">
+    <span>进度</span> → <span>卡点</span> → <span>方案</span> → <span>支持</span>
+  </div>
+</div>
+
+<!-- 第一句 -->
+<h2><span class="section-num">第一句</span>说进度</h2>
+
+<div class="principle">以终为始，告诉领导<strong>到哪一站</strong>，离终点<strong>还多远</strong></div>
+
+<h3>为什么要说进度</h3>
+<ul>
+  <li>领导每天处理大量信息，需要掌控感</li>
+  <li>进度透明能避免"惊喜"（尤其是坏消息）</li>
+  <li>让领导知道什么时候需要介入</li>
+</ul>
+
+<h3>怎么说</h3>
+<ul>
+  <li><strong>明确里程碑</strong>：用项目阶段的关键词（如"需求确认"、"开发完成"、"测试中"）</li>
+  <li><strong>量化进度</strong>：百分比、完成数/总数、时间进度</li>
+  <li><strong>预判终点</strong>：预计什么时候能完成</li>
+</ul>
+
+<h3>⚠️ 常见错误</h3>
+<table>
+  <tr><th>❌ 错误说法</th><th>✅ 正确说法</th></tr>
+  <tr><td class="wrong">"在推进中"</td><td class="right">"完成了80%，预计周三完成"</td></tr>
+  <tr><td class="wrong">"差不多了"</td><td class="right">"还剩UI评审，预计周五上线"</td></tr>
+  <tr><td class="wrong">"正常进行"</td><td class="right">"进入测试阶段，比计划提前1天"</td></tr>
+</table>
+
+<hr class="divider">
+
+<!-- 第二句 -->
+<h2><span class="section-num">第二句</span>说卡点</h2>
+
+<div class="principle">回到<strong>事实层面</strong>，别讲情绪</div>
+
+<h3>为什么要说卡点</h3>
+<ul>
+  <li>卡点是阻碍进度的真实问题，领导需要知道</li>
+  <li>区分"事实"和"情绪"是关键</li>
+  <li>提前暴露问题 = 给自己争取资源</li>
+</ul>
+
+<h3>怎么说</h3>
+<ul>
+  <li><strong>事实</strong> = 可验证的数据、具体事件</li>
+  <li><strong>情绪</strong> = 感受、主观判断、推卸责任</li>
+</ul>
+
+<table>
+  <tr><th>❌ 情绪化表达</th><th>✅ 事实化表达</th></tr>
+  <tr><td class="wrong">"前端不配合"</td><td class="right">"接口文档已发出3天，等待前端联调"</td></tr>
+  <tr><td class="wrong">"需求总是变"</td><td class="right">"收到第2版需求变更，已评估影响：+2天"</td></tr>
+  <tr><td class="wrong">"甲方太难搞"</td><td class="right">"甲方要求增加验收流程，已协调时间节点"</td></tr>
+  <tr><td class="wrong">"测试不给力"</td><td class="right">"发现3个严重bug，等待测试回归"</td></tr>
+</table>
+
+<div class="tip"><strong>关键心法：</strong>对事不对人，卡点描述的是"什么阻碍了什么"，不是"谁的问题"</div>
+
+<hr class="divider">
+
+<!-- 第三句 -->
+<h2><span class="section-num">第三句</span>说方案</h2>
+
+<div class="principle"><strong>方案越封闭越好，变量越少越好</strong>，让领导做选择题</div>
+
+<h3>为什么要说方案</h3>
+<ul>
+  <li>领导不是你的执行者，是决策者</li>
+  <li>给方案 = 显示你在思考，给结论 = 显示你在担当</li>
+  <li>让领导做判断题/选择题，不要做问答题</li>
+</ul>
+
+<pre><code>问题 → 方案A（优点/缺点） → 方案B（优点/缺点） → 你的推荐</code></pre>
+
+<h3>方案数量选择</h3>
+<table>
+  <tr><th>情况</th><th>建议方案数</th></tr>
+  <tr><td>紧急</td><td>1个（直接给最优解）</td></tr>
+  <tr><td>常规</td><td>2-3个（对比分析）</td></tr>
+  <tr><td>复杂</td><td>最多3个 + 推荐优先级</td></tr>
+</table>
+
+<h3>⚠️ 常见错误</h3>
+<table>
+  <tr><th>❌ 错误做法</th><th>✅ 正确做法</th></tr>
+  <tr><td class="wrong">"领导，这个怎么办？"</td><td class="right">"我建议A，原因是..."</td></tr>
+  <tr><td class="wrong">抛出一个开放性问题</td><td class="right">提供2个方案，附上利弊分析</td></tr>
+  <tr><td class="wrong">方案变量太多</td><td class="right">把方案做减法，控制在1-2个核心变量</td></tr>
+</table>
+
+<hr class="divider">
+
+<!-- 最后半句 -->
+<h2><span class="section-num">最后半句</span>说支持</h2>
+
+<div class="principle"><strong>表达需要什么支持</strong>，把球传给领导</div>
+
+<h3>为什么要说支持</h3>
+<ul>
+  <li>明确诉求 = 提高资源到位的概率</li>
+  <li>让领导知道怎么帮你</li>
+  <li>也是在管理领导的预期</li>
+</ul>
+
+<table>
+  <tr><th>类型</th><th>示例话术</th></tr>
+  <tr><td>🔧 资源支持</td><td>"需要再协调一名测试同事"</td></tr>
+  <tr><td>⏰ 时间支持</td><td>"申请延期1天，周五交付"</td></tr>
+  <tr><td>🤝 协调支持</td><td>"需要您和XX部门负责人打个招呼"</td></tr>
+  <tr><td>✅ 决策支持</td><td>"请确认采用方案A还是方案B"</td></tr>
+  <tr><td>💡 经验支持</td><td>"这个模块我没经验，想请教您的建议"</td></tr>
+</table>
+
+<hr class="divider">
+
+<!-- 完整话术模板 -->
+<h2>完整话术模板</h2>
+<pre><code>【进度】XX项目目前完成到XX阶段，完成了XX%，预计XX完成。
+【卡点】当前卡在XX，原因是XX。
+【方案】我建议两个方案：A（优/劣）、B（优/劣），推荐A。
+【支持】需要您帮忙协调XX/确认XX。</code></pre>
+
+<hr class="divider">
+
+<!-- 真实场景举例 -->
+<h2>真实场景举例</h2>
+
+<div class="scenario">
+  <h3>场景1：日常进度汇报</h3>
+  <p class="bg">背景：新员工培训系统开发，进度正常但有小问题</p>
+  <div class="quote low"><span class="quote-label">低效汇报</span>领导，培训系统在做着呢，前端那边好像有点问题，不过问题不大。</div>
+  <div class="quote high"><span class="quote-label">三句半汇报</span><strong>【进度】</strong>培训系统开发完成75%，已进入内测阶段，原定周五上线。<strong>【卡点】</strong>发现登录模块有兼容性bug，安卓端偶发闪退。<strong>【方案】</strong>两个方案：(A)紧急修复，预计加1天；(B)先用H5降级方案，周五如期上线。我推荐A。<strong>【支持】</strong>需要您确认是否同意延期1天？</div>
+</div>
+
+<div class="scenario">
+  <h3>场景2：向上级要资源（跨部门协作）</h3>
+  <p class="bg">背景：招聘任务重，HRBP需要协调其他部门配合</p>
+  <div class="quote low"><span class="quote-label">低效汇报</span>领导，现在招聘太难了，各个部门都不配合，我压力很大。</div>
+  <div class="quote high"><span class="quote-label">三句半汇报</span><strong>【进度】</strong>Q2计划招聘15人，目前offer待入职3人，面试中5人，缺口7人。<strong>【卡点】</strong>业务部门面试官排期困难，平均响应时间超过3天。<strong>【方案】</strong>方案A：恳请您帮忙发一封动员邮件；方案B：调整面试流程，减少每个岗位的面试轮次。我推荐A。<strong>【支持】</strong>需要您向3位业务负责人发送支持邮件。</div>
+</div>
+
+<div class="scenario">
+  <h3>场景3：汇报意外情况（项目可能延期）</h3>
+  <p class="bg">背景：客户临时变更需求，项目可能无法按时交付</p>
+  <div class="quote low"><span class="quote-label">低效汇报</span>领导，甲方那边又有新想法了，他们也太不靠谱了，项目可能要延期...</div>
+  <div class="quote high"><span class="quote-label">三句半汇报</span><strong>【进度】</strong>项目原定3月31日交付，目前开发完成90%，测试完成60%。<strong>【卡点】</strong>昨天下午收到甲方第三版需求变更，新增用户权限模块，预估增加5个工作日。<strong>【方案】</strong>方案A：全部接受变更，延期至4月7日；方案B：本期先做MVP，权限模块放到下期。考虑到合同节点，我推荐方案A。<strong>【支持】</strong>需要您协助与甲方沟通变更确认，并确认延期方案。</div>
+</div>
+
+<div class="scenario">
+  <h3>场景4：寻求专业建议</h3>
+  <p class="bg">背景：遇到专业难题，想请教领导意见</p>
+  <div class="quote low"><span class="quote-label">低效汇报</span>领导，有个问题我想问问你...</div>
+  <div class="quote high"><span class="quote-label">三句半汇报</span><strong>【进度】</strong>薪酬体系优化项目，完成了行业调研和内部访谈。<strong>【卡点】</strong>在宽带薪酬的档位设计上，市场上有'3倍'和'5倍'两种带宽做法，各有利弊。<strong>【方案】</strong>方案A用3倍（差距小、激励弱），方案B用5倍（差距大、激励强）。我们是小团队+快速成长期，我倾向方案B。<strong>【支持】</strong>想听听您对这个行业和团队的判断。</div>
+</div>
+
+<div class="scenario">
+  <h3>场景5：周报/月报汇报</h3>
+  <p class="bg">背景：向领导汇报周期工作进展</p>
+  <div class="quote low"><span class="quote-label">低效周报</span>本周主要做了招聘、培训、员工关系等工作，完成了领导交代的任务。</div>
+  <div class="quote high"><span class="quote-label">三句半周报</span><strong>【进度】</strong>本周完成：招聘入职3人（新招目标15人，达成20%）、完成2场新员工培训、处理了3起员工关系问题。<strong>【卡点】</strong>核心岗位Java高级工程师简历量不足，本周仅收到2份符合要求的简历。<strong>【方案】</strong>方案A：增加猎头渠道，预计增加成本但缩短周期；方案B：调整岗位要求，降低硬性条件；方案C：内部推荐奖励翻倍。本周我先执行方案C，同步尝试方案A。<strong>【支持】</strong>需要您确认猎头合作的预算审批。</div>
+</div>
+
+<hr class="divider">
+
+<!-- 进阶技巧 -->
+<h2>进阶技巧</h2>
+
+<h3>1. 报喜也要报忧</h3>
+<ul>
+  <li>好消息：简单带过</li>
+  <li>坏消息：<strong>必须说</strong>，越早越好</li>
+  <li>比例建议：80%进度 + 20%问题（常态）</li>
+</ul>
+
+<h3>2. 控制汇报节奏</h3>
+<table>
+  <tr><th>类型</th><th>建议频率</th></tr>
+  <tr><td>紧急/重要项目</td><td>每天或隔天</td></tr>
+  <tr><td>常规项目</td><td>每周1-2次</td></tr>
+  <tr><td>稳定推进的工作</td><td>每周/每两周</td></tr>
+</table>
+
+<h3>3. 领导风格适配</h3>
+<table>
+  <tr><th>领导风格</th><th>适配策略</th></tr>
+  <tr><td>掌控型</td><td>主动汇报、数据详尽</td></tr>
+  <tr><td>结果型</td><td>结论先行、减少细节</td></tr>
+  <tr><td>授权型</td><td>定期同步、突发再报</td></tr>
+</table>
+
+<h3>4. 预防性汇报</h3>
+<div class="badge-row">
+  <span class="badge">在问题变大之前说</span>
+  <span class="badge">在领导问你之前说</span>
+  <span class="badge">在需要领导决策之前说</span>
+</div>
+
+<div class="summary-box">
+  <div class="emoji">🎯</div>
+  <blockquote>用结构化方式，让领导用最小精力获得最大信息量，并清晰知道你需要什么。</blockquote>
+</div>
+
+</body>
+</html>
