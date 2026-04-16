@@ -1,0 +1,2548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker 完全指南 - 互动式学习</title>
+<style>
+  :root {
+    --bg: #0e1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --orange: #d29922;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --cyan: #39c5cf;
+    --yellow: #e3b341;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* 顶部导航 */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: rgba(13,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 1000;
+    padding: 0 2rem;
+  }
+  nav .inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+  }
+  nav .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+  nav .logo svg { width: 28px; height: 28px; }
+  nav .links { display: flex; gap: 0.5rem; list-style: none; }
+  nav .links a {
+    color: var(--text2);
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    transition: all 0.2s;
+  }
+  nav .links a:hover, nav .links a.active {
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  /* 滚动进度条 */
+  #progress-bar {
+    position: fixed;
+    top: 60px; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    width: 0%;
+    z-index: 999;
+    transition: width 0.1s;
+  }
+
+  /* 通用容器 */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+  /* Hero */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 100px 1.5rem 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(88,166,255,0.08) 0%, transparent 70%);
+    top: -100px; left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.82rem;
+    color: var(--green);
+    margin-bottom: 2rem;
+    animation: fadeUp 0.6s ease;
+  }
+  .hero-badge .dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 50%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1.2rem;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+  .hero p {
+    font-size: 1.15rem;
+    color: var(--text2);
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+  .hero-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s ease 0.3s both;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-primary:hover { background: #79b8ff; transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: var(--surface2); transform: translateY(-1px); }
+  .hero-stats {
+    display: flex;
+    gap: 3rem;
+    justify-content: center;
+    margin-top: 4rem;
+    animation: fadeUp 0.6s ease 0.4s both;
+  }
+  .hero-stat { text-align: center; }
+  .hero-stat .num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .hero-stat .label {
+    font-size: 0.8rem;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 滚动动画 */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* 章节通用 */
+  section { padding: 80px 0; }
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+  }
+  .section-title {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    margin-bottom: 1rem;
+  }
+  .section-desc {
+    color: var(--text2);
+    max-width: 600px;
+    font-size: 1.05rem;
+  }
+
+  /* Docker logo区 */
+  .docker-logo-section { text-align: center; padding: 60px 0; }
+  .docker-whale {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 2rem;
+    position: relative;
+    animation: float 4s ease-in-out infinite;
+  }
+  .docker-whale svg { width: 100%; height: 100%; }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+  .docker-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.2rem;
+    margin-top: 3rem;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(88,166,255,0.1);
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-icon {
+    font-size: 2rem;
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+  .feature-card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .feature-card p { color: var(--text2); font-size: 0.9rem; }
+
+  /* 对比表格 */
+  .comparison { background: var(--surface); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; margin-top: 2rem; }
+  .comparison table { width: 100%; border-collapse: collapse; }
+  .comparison th {
+    background: var(--surface2);
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+  }
+  .comparison td {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+    vertical-align: top;
+  }
+  .comparison tr:last-child td { border-bottom: none; }
+  .comparison .vm { color: var(--red); }
+  .comparison .docker-c { color: var(--green); }
+  .comparison .highlight { background: rgba(88,166,255,0.05); }
+
+  /* 核心概念 */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.8rem;
+    position: relative;
+    transition: all 0.3s;
+  }
+  .concept-card:hover { border-color: var(--accent); }
+  .concept-num {
+    position: absolute;
+    top: -15px;
+    left: 20px;
+    background: var(--accent);
+    color: #fff;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .concept-card h3 {
+    font-size: 1.15rem;
+    margin: 0.3rem 0 0.6rem;
+    color: var(--accent);
+  }
+  .concept-card p { color: var(--text2); font-size: 0.9rem; }
+  .concept-card code {
+    display: inline-block;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 0.82rem;
+    color: var(--orange);
+    margin-top: 0.5rem;
+  }
+
+  /* 架构图 */
+  .arch-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 2rem;
+    position: relative;
+  }
+  .arch-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .arch-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    min-width: 120px;
+    position: relative;
+    transition: all 0.3s;
+  }
+  .arch-box:hover { border-color: var(--accent); transform: scale(1.05); }
+  .arch-box .arch-label { font-size: 0.78rem; color: var(--text2); margin-bottom: 4px; }
+  .arch-box .arch-name { font-weight: 700; font-size: 0.9rem; }
+  .arch-box.client .arch-name { color: var(--accent); }
+  .arch-box.docker .arch-name { color: var(--green); }
+  .arch-box.image .arch-name { color: var(--purple); }
+  .arch-box.os .arch-name { color: var(--orange); }
+  .arch-arrow {
+    color: var(--text2);
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  .arch-legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .arch-legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text2); }
+  .arch-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* ===== 互动教程区 ===== */
+  .tutorial-section {
+    background: linear-gradient(180deg, var(--bg) 0%, rgba(22,27,34,0.5) 100%);
+  }
+  .tutorial-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    transition: border-color 0.3s;
+  }
+  .tutorial-card:hover { border-color: var(--accent); }
+  .tutorial-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    gap: 1rem;
+  }
+  .tutorial-header:hover { background: rgba(255,255,255,0.02); }
+  .tutorial-header-left { display: flex; align-items: center; gap: 1rem; }
+  .tutorial-num-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .tutorial-title-text {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .tutorial-desc-text {
+    font-size: 0.82rem;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+  .tutorial-toggle {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  .tutorial-card.open .tutorial-toggle { transform: rotate(45deg); color: var(--accent); }
+  .tutorial-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tutorial-card.open .tutorial-body { max-height: 2000px; }
+
+  .tutorial-content { padding: 0 1.5rem 1.5rem; }
+
+  /* 步骤 */
+  .step-list { counter-reset: step; list-style: none; }
+  .step-item {
+    counter-increment: step;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+    position: relative;
+  }
+  .step-item::before {
+    content: counter(step);
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+  .step-content { flex: 1; }
+  .step-content p { margin-bottom: 0.5rem; font-size: 0.92rem; }
+  .step-content code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 0.82rem;
+    color: var(--orange);
+  }
+
+  /* 命令交互区 */
+  .terminal-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0.8rem 0;
+  }
+  .terminal-bar {
+    background: var(--surface2);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .terminal-dots { display: flex; gap: 5px; }
+  .terminal-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+  .terminal-dot.red { background: #ff5f56; }
+  .terminal-dot.yellow { background: #ffbd2e; }
+  .terminal-dot.green { background: #27c93f; }
+  .terminal-title {
+    font-size: 0.75rem;
+    color: var(--text2);
+    margin-left: 8px;
+    font-family: 'Cascadia Code', monospace;
+  }
+  .terminal-body { padding: 1rem 1.2rem; font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.85rem; }
+  .terminal-cmd { color: var(--green); margin-bottom: 0.3rem; }
+  .terminal-cmd::before { content: '$ '; color: var(--accent); }
+  .terminal-output { color: var(--text2); padding-left: 1.2rem; line-height: 1.8; }
+  .terminal-output .ok { color: var(--green); }
+  .terminal-output .info { color: var(--accent); }
+  .terminal-output .warn { color: var(--yellow); }
+  .terminal-output .error { color: var(--red); }
+
+  /* 命令卡片 */
+  .cmd-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.8rem; margin: 0.8rem 0; }
+  .cmd-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .cmd-card:hover { border-color: var(--accent); background: rgba(88,166,255,0.05); }
+  .cmd-card:active { transform: scale(0.98); }
+  .cmd-card .cmd-name { font-weight: 700; font-size: 0.88rem; color: var(--accent); font-family: monospace; }
+  .cmd-card .cmd-desc { font-size: 0.78rem; color: var(--text2); margin-top: 3px; }
+  .cmd-card .cmd-copy {
+    position: absolute;
+    top: 8px; right: 8px;
+    opacity: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .cmd-card:hover .cmd-copy { opacity: 1; }
+  .cmd-copy.copied { color: var(--green) !important; border-color: var(--green); }
+
+  /* 互动模拟器 */
+  .simulator {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+  .sim-bar {
+    background: var(--surface2);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sim-bar .dots { display: flex; gap: 5px; }
+  .sim-bar .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .sim-bar .sim-title { font-size: 0.75rem; color: var(--text2); font-family: monospace; margin-left: 4px; }
+  .sim-body { padding: 1rem; }
+  .sim-output {
+    background: #000;
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Cascadia Code', monospace;
+    font-size: 0.82rem;
+    min-height: 120px;
+    color: #00ff00;
+    line-height: 1.8;
+    margin-bottom: 0.8rem;
+    white-space: pre-wrap;
+  }
+  .sim-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .sim-prompt { color: var(--accent); font-family: monospace; font-weight: 700; flex-shrink: 0; }
+  .sim-input {
+    background: transparent;
+    border: none;
+    color: var(--green);
+    font-family: 'Cascadia Code', monospace;
+    font-size: 0.85rem;
+    flex: 1;
+    outline: none;
+    caret-color: var(--green);
+  }
+  .sim-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .sim-btn:hover { background: #79b8ff; }
+  .sim-hint { font-size: 0.75rem; color: var(--text2); margin-top: 0.5rem; }
+
+  /* 快捷命令面板 */
+  .quick-commands {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+  }
+  .quick-commands h3 { font-size: 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .qc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.6rem; }
+  .qc-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem 0.8rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .qc-item:hover { border-color: var(--accent); background: rgba(88,166,255,0.05); }
+  .qc-cmd { font-family: monospace; font-size: 0.8rem; color: var(--green); font-weight: 600; white-space: nowrap; }
+  .qc-desc { font-size: 0.75rem; color: var(--text2); }
+
+  /* 测验区 */
+  .quiz-section { margin-top: 1.5rem; }
+  .quiz-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin-bottom: 0.8rem;
+  }
+  .quiz-q { font-weight: 600; margin-bottom: 0.8rem; font-size: 0.95rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .quiz-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem 0.8rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.88rem;
+  }
+  .quiz-option:hover { border-color: var(--accent); }
+  .quiz-option.correct { border-color: var(--green); background: rgba(63,185,80,0.1); }
+  .quiz-option.wrong { border-color: var(--red); background: rgba(248,81,73,0.1); }
+  .quiz-option .opt-letter {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .quiz-option.correct .opt-letter { background: var(--green); color: #fff; }
+  .quiz-option.wrong .opt-letter { background: var(--red); color: #fff; }
+  .quiz-result {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    padding: 0.6rem;
+    border-radius: 6px;
+    display: none;
+  }
+  .quiz-result.show { display: block; }
+  .quiz-result.correct-res { background: rgba(63,185,80,0.1); color: var(--green); }
+  .quiz-result.wrong-res { background: rgba(248,81,73,0.1); color: var(--red); }
+
+  /* Dockerfile编辑器 */
+  .dockerfile-editor {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0.8rem 0;
+  }
+  .dockerfile-toolbar {
+    background: var(--surface2);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .dockerfile-toolbar .toolbar-left { display: flex; align-items: center; gap: 6px; }
+  .dockerfile-toolbar .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dockerfile-tabs { display: flex; gap: 2px; }
+  .dockerfile-tab {
+    padding: 4px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.78rem;
+    color: var(--text2);
+    cursor: pointer;
+    font-family: monospace;
+    transition: all 0.2s;
+  }
+  .dockerfile-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+  .dockerfile-content {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    font-family: 'Cascadia Code', monospace;
+    font-size: 0.85rem;
+  }
+  .dockerfile-linenums {
+    background: rgba(255,255,255,0.02);
+    padding: 1rem 12px;
+    text-align: right;
+    color: var(--text2);
+    border-right: 1px solid var(--border);
+    user-select: none;
+    line-height: 1.8;
+    font-size: 0.8rem;
+  }
+  .dockerfile-code {
+    padding: 1rem;
+    line-height: 1.8;
+    white-space: pre;
+    overflow-x: auto;
+    outline: none;
+  }
+  .dockerfile-code .kw { color: var(--purple); font-weight: 700; }
+  .dockerfile-code .val { color: var(--green); }
+  .dockerfile-code .cmt { color: var(--text2); font-style: italic; }
+  .dockerfile-code .arg { color: var(--orange); }
+  .dockerfile-code .ins { background: rgba(63,185,80,0.2); border-radius: 2px; }
+
+  /* 进度追踪 */
+  .progress-tracker {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .progress-header h3 { font-size: 1rem; }
+  .progress-bar-wrap {
+    background: var(--bg);
+    border-radius: 10px;
+    height: 10px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+  .progress-steps { display: flex; justify-content: space-between; margin-top: 0.8rem; }
+  .progress-step {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--text2);
+    flex: 1;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .progress-step.done { color: var(--green); }
+  .progress-step.active { color: var(--accent); font-weight: 700; }
+  .progress-step .step-icon {
+    font-size: 1.2rem;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  /* 提示框 */
+  .tip-box {
+    background: rgba(88,166,255,0.08);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 0.8rem 1rem;
+    margin: 0.8rem 0;
+    font-size: 0.88rem;
+  }
+  .tip-box.green-tip {
+    background: rgba(63,185,80,0.08);
+    border-color: rgba(63,185,80,0.2);
+    border-left-color: var(--green);
+  }
+  .tip-box.orange-tip {
+    background: rgba(210,153,34,0.08);
+    border-color: rgba(210,153,34,0.2);
+    border-left-color: var(--orange);
+  }
+  .tip-box.red-tip {
+    background: rgba(248,81,73,0.08);
+    border-color: rgba(248,81,73,0.2);
+    border-left-color: var(--red);
+  }
+  .tip-label { font-weight: 700; margin-bottom: 3px; font-size: 0.82rem; }
+  .tip-box.green-tip .tip-label { color: var(--green); }
+  .tip-box.orange-tip .tip-label { color: var(--orange); }
+  .tip-box.red-tip .tip-label { color: var(--red); }
+  .tip-box:not([class*="tip"]) .tip-label { color: var(--accent); }
+
+  /* 页脚 */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 0;
+    text-align: center;
+    color: var(--text2);
+    font-size: 0.85rem;
+  }
+
+  /* 响应式 */
+  @media (max-width: 768px) {
+    nav .links { display: none; }
+    .hero-stats { gap: 1.5rem; }
+    .arch-row { flex-direction: column; }
+    .arch-arrow { transform: rotate(90deg); }
+    .qc-grid { grid-template-columns: 1fr; }
+    .cmd-cards { grid-template-columns: 1fr; }
+  }
+
+  /* 代码块 */
+  pre.code-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-family: 'Cascadia Code', monospace;
+    font-size: 0.82rem;
+    margin: 0.8rem 0;
+    line-height: 1.8;
+  }
+  pre .kw { color: var(--purple); font-weight: 700; }
+  pre .str { color: var(--green); }
+  pre .cmt { color: var(--text2); font-style: italic; }
+  pre .num { color: var(--orange); }
+
+  /* TOC */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+  .toc h3 { font-size: 0.9rem; margin-bottom: 1rem; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+  .toc a {
+    display: block;
+    color: var(--text2);
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    border-left: 2px solid transparent;
+  }
+  .toc a:hover { color: var(--accent); background: rgba(88,166,255,0.05); border-left-color: var(--accent); }
+  .toc a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(88,166,255,0.08); }
+
+  /* 双栏布局 */
+  .two-col { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; align-items: start; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } .toc { position: static; } }
+
+  /* 标签 */
+  .tag {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    color: var(--text2);
+    margin: 2px;
+  }
+  .tag.blue { background: rgba(88,166,255,0.15); border-color: rgba(88,166,255,0.3); color: var(--accent); }
+  .tag.green { background: rgba(63,185,80,0.15); border-color: rgba(63,185,80,0.3); color: var(--green); }
+  .tag.orange { background: rgba(210,153,34,0.15); border-color: rgba(210,153,34,0.3); color: var(--orange); }
+  .tag.purple { background: rgba(188,140,255,0.15); border-color: rgba(188,140,255,0.3); color: var(--purple); }
+</style>
+</head>
+<body>
+
+<!-- 导航 -->
+<nav>
+  <div class="inner">
+    <div class="logo">
+      <svg viewBox="0 0 780 630" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#22A6B3" d="M382 0C291 0 210 52.5 168.8 130H168C112 130 60 167 40 219.5c27.5-7.5 57.5-11.5 88.5-11.5C165 208 193 219 218.5 235c-15.5-3-31-3-46.5-3C112.5 232 58 263 43 302.5c18-2 36.5-3 55.5-3 66.5 0 127 28 170.5 73.5c38.5 41 59.5 97.5 59.5 157h76c32.5 0 58.5-26.5 58.5-59s-26-59-58.5-59H382c-32.5 0-58.5 26.5-58.5 59s26 59 58.5 59h122c65 0 117-52.5 117-117S569 0 504 0h-122z"/>
+        <circle cx="540" cy="90" r="28" fill="#22A6B3"/>
+      </svg>
+      Docker 全指南
+    </div>
+    <ul class="links">
+      <li><a href="#intro" class="active">概述</a></li>
+      <li><a href="#concepts">核心概念</a></li>
+      <li><a href="#tutorial">互动教程</a></li>
+      <li><a href="#dockerfile">Dockerfile</a></li>
+      <li><a href="#quiz">小测验</a></li>
+    </ul>
+  </div>
+</nav>
+<div id="progress-bar"></div>
+
+<!-- Hero -->
+<section class="hero" id="intro">
+  <div>
+    <div class="hero-badge">
+      <span class="dot"></span>
+      互动式学习 · 免费开源
+    </div>
+    <h1>Docker 完全指南</h1>
+    <p>从零掌握容器技术，通过互动式教程边学边练，<br>深入理解 Docker 的核心概念与实战技巧</p>
+    <div class="hero-btns">
+      <a href="#tutorial" class="btn-primary">开始互动学习 →</a>
+      <a href="#concepts" class="btn-secondary">核心概念</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num">20+</div><div class="label">互动命令</div></div>
+      <div class="hero-stat"><div class="num">5</div><div class="label">实战教程</div></div>
+      <div class="hero-stat"><div class="num">3</div><div class="label">随堂测验</div></div>
+      <div class="hero-stat"><div class="num">100%</div><div class="label">免费</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Docker是什么 -->
+<section style="padding-top:0">
+  <div class="container">
+    <div class="two-col">
+      <div class="reveal">
+        <div class="section-tag">§ 01 — 基础入门</div>
+        <h2 class="section-title">什么是 Docker？</h2>
+        <p class="section-desc">Docker 是一个开源的容器化平台，让开发者可以将应用及其依赖打包成轻量级、可移植的容器，在任何环境中一致运行。</p>
+
+        <div class="docker-features">
+          <div class="feature-card">
+            <span class="feature-icon">📦</span>
+            <h3>容器化打包</h3>
+            <p>将应用代码、运行时、库文件、配置全部打包为一个独立的容器镜像</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">🚀</span>
+            <h3>秒级启动</h3>
+            <p>容器启动时间以秒计算，比传统虚拟机快数十倍，大幅提升部署效率</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">🔄</span>
+            <h3>环境一致性</h3>
+            <p>开发、测试、生产环境完全一致，彻底告别"在我机器上能跑"的困扰</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">🐳</span>
+            <h3>轻量高效</h3>
+            <p>多个容器共享宿主机内核，无需完整操作系统，开销极低，资源利用率高</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">🤝</span>
+            <h3>生态丰富</h3>
+            <p>Docker Hub 拥有超过 10 万个官方和社区镜像，几乎涵盖所有常用技术栈</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">⚙️</span>
+            <h3>DevOps 友好</h3>
+            <p>天然适配 CI/CD 流水线，与 Kubernetes、Swarm 等编排工具无缝集成</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOC -->
+      <div>
+        <div class="toc reveal">
+          <h3>目录导航</h3>
+          <a href="#intro">概述</a>
+          <a href="#concepts">核心概念</a>
+          <a href="#arch">Docker 架构</a>
+          <a href="#tutorial">互动教程</a>
+          <a href="#dockerfile">Dockerfile 教程</a>
+          <a href="#compose">Docker Compose</a>
+          <a href="#quiz">小测验</a>
+          <a href="#cheatsheet">命令速查</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VS 虚拟机 -->
+<section style="background: var(--surface);">
+  <div class="container reveal">
+    <div class="section-tag">§ 02 — 技术对比</div>
+    <h2 class="section-title">Docker vs 传统虚拟机</h2>
+    <p class="section-desc">了解 Docker 容器与传统虚拟机之间的关键差异</p>
+
+    <div class="comparison">
+      <table>
+        <thead>
+          <tr>
+            <th>对比维度</th>
+            <th class="vm">🖥️ 传统虚拟机</th>
+            <th class="docker-c">🐳 Docker 容器</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="highlight">
+            <td>架构</td>
+            <td>每个 VM 运行完整操作系统 + 应用</td>
+            <td>所有容器共享宿主机 OS 内核</td>
+          </tr>
+          <tr>
+            <td>启动时间</td>
+            <td>数分钟</td>
+            <td>毫秒 ~ 秒级</td>
+          </tr>
+          <tr class="highlight">
+            <td>资源占用</td>
+            <td>每个 VM 占用数 GB 磁盘 + 内存</td>
+            <td>容器仅需 MB 级开销</td>
+          </tr>
+          <tr>
+            <td>隔离性</td>
+            <td>完全硬件级隔离，安全性高</td>
+            <td>进程级隔离，隔离稍弱但足够</td>
+          </tr>
+          <tr class="highlight">
+            <td>性能</td>
+            <td>有虚拟化损耗，性能略低</td>
+            <td>接近原生性能</td>
+          </tr>
+          <tr>
+            <td>可移植性</td>
+            <td>需整体镜像迁移</td>
+            <td>镜像可一键部署到任何 Docker 环境</td>
+          </tr>
+          <tr class="highlight">
+            <td>规模</td>
+            <td>单台宿主机通常运行 3~5 个 VM</td>
+            <td>单台宿主机可运行数十至数百容器</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip-box green-tip" style="margin-top:1.5rem">
+      <div class="tip-label">💡 核心区别</div>
+      虚拟机虚拟化硬件，容器虚拟化操作系统。一台服务器上可以运行数十个容器，但只能运行几个虚拟机——这就是容器如此高效的原因。
+    </div>
+  </div>
+</section>
+
+<!-- 核心概念 -->
+<section id="concepts">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-tag">§ 03 — 核心概念</div>
+      <h2 class="section-title">Docker 核心概念</h2>
+      <p class="section-desc">掌握 Image（镜像）、Container（容器）、Volume（卷）等关键概念</p>
+
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="concept-num">1</div>
+          <h3>🖼️ Image（镜像）</h3>
+          <p>容器的模板，只读。一个镜像可以创建多个容器。就像一个蛋糕模具——同一个模具可以烤出多个蛋糕。</p>
+          <code>nginx:alpine</code>
+        </div>
+        <div class="concept-card">
+          <div class="concept-num">2</div>
+          <h3>📦 Container（容器）</h3>
+          <p>镜像的运行实例，可写、可停止、可删除。每个容器相互隔离，拥有自己的文件系统、网络、进程空间。</p>
+          <code>docker run nginx</code>
+        </div>
+        <div class="concept-card">
+          <div class="concept-num">3</div>
+          <h3>📄 Dockerfile</h3>
+          <p>构建镜像的配方文件，描述如何从基础镜像逐步安装依赖、复制文件、配置环境，最终构建出你的自定义镜像。</p>
+          <code>docker build -t myapp .</code>
+        </div>
+        <div class="concept-card">
+          <div class="concept-num">4</div>
+          <h3>💾 Volume（数据卷）</h3>
+          <p>用于持久化容器数据。即使容器被删除，卷中的数据依然保留，实现数据与容器分离。</p>
+          <code>docker run -v /data:/app</code>
+        </div>
+        <div class="concept-card">
+          <div class="concept-num">5</div>
+          <h3>🔗 Network（网络）</h3>
+          <p>容器间通信的桥梁。支持 bridge、host、overlay 等模式，让容器可以相互访问或与外部网络通信。</p>
+          <code>docker network create mynet</code>
+        </div>
+        <div class="concept-card">
+          <div class="concept-num">6</div>
+          <h3>📚 Registry（仓库）</h3>
+          <p>存储和分发镜像的服务。Docker Hub 是最大的公共仓库，也可以搭建私有仓库如 Harbor。</p>
+          <code>docker push myimage:v1</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 架构图 -->
+<section id="arch" style="background:var(--surface);">
+  <div class="container reveal">
+    <div class="section-tag">§ 04 — 工作原理</div>
+    <h2 class="section-title">Docker 架构</h2>
+    <p class="section-desc">Docker 采用客户端-服务端（Client-Server）架构，通过 REST API 进行通信</p>
+
+    <div class="arch-diagram">
+      <div class="arch-row">
+        <div class="arch-box client">
+          <div class="arch-label">CLIENT</div>
+          <div class="arch-name">Docker CLI</div>
+        </div>
+        <span class="arch-arrow">⟶</span>
+        <div class="arch-box docker">
+          <div class="arch-label">SERVER</div>
+          <div class="arch-name">Docker Daemon</div>
+          <div style="font-size:0.72rem;color:var(--text2);margin-top:4px">dockerd</div>
+        </div>
+        <span class="arch-arrow">⟶</span>
+        <div class="arch-box image">
+          <div class="arch-label">REGISTRY</div>
+          <div class="arch-name">镜像仓库</div>
+          <div style="font-size:0.72rem;color:var(--text2);margin-top:4px">Docker Hub</div>
+        </div>
+      </div>
+      <div style="text-align:center;padding:1rem 0;color:var(--text2);font-size:1.5rem;">⟵ ⟶</div>
+      <div class="arch-row">
+        <div class="arch-box os">
+          <div class="arch-label">KERNEL</div>
+          <div class="arch-name">Linux Kernel</div>
+        </div>
+        <span class="arch-arrow">⟵</span>
+        <div class="arch-box docker" style="border-color:var(--green)">
+          <div class="arch-label">RUNTIME</div>
+          <div class="arch-name">containerd</div>
+          <div style="font-size:0.72rem;color:var(--text2);margin-top:4px">OCI 标准</div>
+        </div>
+        <span class="arch-arrow">⟵</span>
+        <div class="arch-box" style="border-color:var(--purple)">
+          <div class="arch-label">WORKLOAD</div>
+          <div class="arch-name" style="color:var(--purple)">Containers</div>
+        </div>
+      </div>
+      <div class="arch-legend">
+        <div class="arch-legend-item"><div class="arch-legend-dot" style="background:var(--accent)"></div>用户交互</div>
+        <div class="arch-legend-item"><div class="arch-legend-dot" style="background:var(--green)"></div>核心组件</div>
+        <div class="arch-legend-item"><div class="arch-legend-dot" style="background:var(--purple)"></div>运行时</div>
+        <div class="arch-legend-item"><div class="arch-legend-dot" style="background:var(--orange)"></div>系统底层</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin-top:1.5rem">
+      <div class="tip-box">
+        <div class="tip-label">Docker CLI</div>docker 命令行工具，用户通过它发送指令
+      </div>
+      <div class="tip-box green-tip">
+        <div class="tip-label">Docker Daemon</div>后台守护进程，负责构建、运行、管理容器
+      </div>
+      <div class="tip-box orange-tip">
+        <div class="tip-label">containerd</div>容器运行时，负责容器生命周期管理（OCI 标准）
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 互动教程 ====== -->
+<section class="tutorial-section" id="tutorial">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-tag">§ 05 — 互动教程</div>
+      <h2 class="section-title">互动式学习</h2>
+      <p class="section-desc">点击每个教程卡片展开，点击命令即可"执行"，在下方终端模拟器中查看效果</p>
+
+      <!-- 进度追踪 -->
+      <div class="progress-tracker">
+        <div class="progress-header">
+          <h3>📊 学习进度</h3>
+          <span id="progress-text" style="font-size:0.85rem;color:var(--accent)">0%</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="main-progress"></div>
+        </div>
+        <div class="progress-steps">
+          <div class="progress-step active" data-step="0" onclick="scrollToSection('t1')"><span class="step-icon">🏃</span>环境安装</div>
+          <div class="progress-step" data-step="1" onclick="scrollToSection('t2')"><span class="step-icon">🔍</span>镜像管理</div>
+          <div class="progress-step" data-step="2" onclick="scrollToSection('t3')"><span class="step-icon">▶️</span>容器运行</div>
+          <div class="progress-step" data-step="3" onclick="scrollToSection('t4')"><span class="step-icon">🔧</span>日常维护</div>
+          <div class="progress-step" data-step="4" onclick="scrollToSection('t5')"><span class="step-icon">🐳</span>Dockerfile</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 教程1：环境安装 ===== -->
+    <div class="tutorial-card reveal" id="t1">
+      <div class="tutorial-header" onclick="toggleTutorial(this)">
+        <div class="tutorial-header-left">
+          <div class="tutorial-num-badge">TUT-01</div>
+          <div>
+            <div class="tutorial-title-text">环境安装与验证</div>
+            <div class="tutorial-desc-text">安装 Docker 并验证安装是否成功</div>
+          </div>
+        </div>
+        <div class="tutorial-toggle">+</div>
+      </div>
+      <div class="tutorial-body">
+        <div class="tutorial-content">
+          <div class="step-list">
+            <div class="step-item">
+              <div class="step-content">
+                <p><strong>第一步：安装 Docker</strong></p>
+                <p>根据你的操作系统选择对应安装方式：</p>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin:0.5rem 0">
+                  <span class="tag blue">Windows</span>
+                  <span class="tag blue">macOS</span>
+                  <span class="tag blue">Ubuntu</span>
+                  <span class="tag blue">CentOS</span>
+                </div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-content">
+                <p><strong>第二步：验证安装</strong></p>
+                <p>打开终端，运行以下命令检查 Docker 版本：</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 模拟器 -->
+          <div class="simulator">
+            <div class="sim-bar">
+              <div class="dots">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+              </div>
+              <span class="sim-title">bash — docker interactive</span>
+            </div>
+            <div class="sim-body">
+              <div class="sim-output" id="sim-output-1">欢迎使用 Docker 互动终端
+点击下方命令即可执行...</div>
+              <div class="sim-input-row">
+                <span class="sim-prompt">$</span>
+                <input class="sim-input" id="sim-input-1" placeholder="输入命令后按回车，或点击右侧按钮" onkeydown="if(event.key==='Enter')runSim(1)">
+                <button class="sim-btn" onclick="runSim(1)">运行</button>
+              </div>
+              <div class="sim-hint">💡 提示：试试输入 <code>docker version</code> 或 <code>docker info</code></div>
+            </div>
+          </div>
+
+          <div class="cmd-cards">
+            <div class="cmd-card" onclick="execCmd(this, 'docker version', 1)">
+              <div class="cmd-copy" onclick="event.stopPropagation();copyCmd(this)">复制</div>
+              <div class="cmd-name">docker version</div>
+              <div class="cmd-desc">查看 Docker 版本信息</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker info', 1)">
+              <div class="cmd-copy" onclick="event.stopPropagation();copyCmd(this)">复制</div>
+              <div class="cmd-name">docker info</div>
+              <div class="cmd-desc">显示 Docker 系统信息</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker run hello-world', 1)">
+              <div class="cmd-copy" onclick="event.stopPropagation();copyCmd(this)">复制</div>
+              <div class="cmd-name">docker run hello-world</div>
+              <div class="cmd-desc">运行测试容器验证安装</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker ps', 1)">
+              <div class="cmd-copy" onclick="event.stopPropagation();copyCmd(this)">复制</div>
+              <div class="cmd-name">docker ps</div>
+              <div class="cmd-desc">查看运行中的容器</div>
+            </div>
+          </div>
+
+          <div class="tip-box green-tip">
+            <div class="tip-label">✅ 安装成功标志</div>
+            运行 <code>docker run hello-world</code> 如果看到 "Hello from Docker!" 消息，说明安装成功！
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 教程2：镜像管理 ===== -->
+    <div class="tutorial-card reveal" id="t2">
+      <div class="tutorial-header" onclick="toggleTutorial(this)">
+        <div class="tutorial-header-left">
+          <div class="tutorial-num-badge">TUT-02</div>
+          <div>
+            <div class="tutorial-title-text">镜像管理</div>
+            <div class="tutorial-desc-text">搜索、拉取、列出、删除 Docker 镜像</div>
+          </div>
+        </div>
+        <div class="tutorial-toggle">+</div>
+      </div>
+      <div class="tutorial-body">
+        <div class="tutorial-content">
+          <p style="color:var(--text2);margin-bottom:1rem;font-size:0.9rem">镜像（Image）是容器的模板。以下命令用于管理镜像：</p>
+
+          <div class="simulator">
+            <div class="sim-bar">
+              <div class="dots">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+              </div>
+              <span class="sim-title">bash — docker images</span>
+            </div>
+            <div class="sim-body">
+              <div class="sim-output" id="sim-output-2">Docker 镜像管理终端
+选择一个命令开始...</div>
+              <div class="sim-input-row">
+                <span class="sim-prompt">$</span>
+                <input class="sim-input" id="sim-input-2" placeholder="输入命令" onkeydown="if(event.key==='Enter')runSim(2)">
+                <button class="sim-btn" onclick="runSim(2)">运行</button>
+              </div>
+              <div class="sim-hint">💡 常用：<code>docker pull</code> <code>docker images</code> <code>docker rmi</code></div>
+            </div>
+          </div>
+
+          <div class="cmd-cards">
+            <div class="cmd-card" onclick="execCmd(this, 'docker search nginx', 2)">
+              <div class="cmd-copy" onclick="event.stopPropagation();copyCmd(this)">复制</div>
+              <div class="cmd-name">docker search nginx</div>
+              <div class="cmd-desc">从 Docker Hub 搜索镜像</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker pull nginx:latest', 2)">
+              <div class="cmd-copy" onclick="event.stopPropagation();copyCmd(this)">复制</div>
+              <div class="cmd-name">docker pull nginx</div>
+              <div class="cmd-desc">拉取 nginx 镜像到本地</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker images', 2)">
+              <div class="cmd-copy" onclick="event.stopPropagation();copyCmd(this)">复制</div>
+              <div class="cmd-name">docker images</div>
+              <div class="cmd-desc">列出本地所有镜像</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker rmi nginx:latest', 2)">
+              <div class="cmd-copy" onclick="event.stopPropagation();copyCmd(this)">复制</div>
+              <div class="cmd-name">docker rmi nginx</div>
+              <div class="cmd-desc">删除指定的本地镜像</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker pull ubuntu:22.04', 2)">
+              <div class="cmd-copy" onclick="event.stopPropagation();copyCmd(this)">复制</div>
+              <div class="cmd-name">docker pull ubuntu:22.04</div>
+              <div class="cmd-desc">拉取指定版本的 Ubuntu</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker rmi $(docker images -q)', 2)">
+              <div class="cmd-copy" onclick="event.stopPropagation();copyCmd(this)">复制</div>
+              <div class="cmd-name">docker rmi $(docker images -q)</div>
+              <div class="cmd-desc">删除所有本地镜像（⚠️）</div>
+            </div>
+          </div>
+
+          <div class="tip-box orange-tip">
+            <div class="tip-label">⚠️ 镜像命名规则</div>
+            格式：<code>registry/repository:tag</code>，如 <code>docker.io/nginx:alpine</code>。省略 tag 默认使用 <code>:latest</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 教程3：容器运行 ===== -->
+    <div class="tutorial-card reveal" id="t3">
+      <div class="tutorial-header" onclick="toggleTutorial(this)">
+        <div class="tutorial-header-left">
+          <div class="tutorial-num-badge">TUT-03</div>
+          <div>
+            <div class="tutorial-title-text">容器运行与生命周期</div>
+            <div class="tutorial-desc-text">run / start / stop / rm 等核心容器操作命令</div>
+          </div>
+        </div>
+        <div class="tutorial-toggle">+</div>
+      </div>
+      <div class="tutorial-body">
+        <div class="tutorial-content">
+          <p style="color:var(--text2);margin-bottom:1rem;font-size:0.9rem">容器是镜像的运行实例。以下是容器管理的核心命令：</p>
+
+          <div class="simulator">
+            <div class="sim-bar">
+              <div class="dots">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+              </div>
+              <span class="sim-title">bash — docker container</span>
+            </div>
+            <div class="sim-body">
+              <div class="sim-output" id="sim-output-3">容器生命周期管理终端
+选择一个命令体验...</div>
+              <div class="sim-input-row">
+                <span class="sim-prompt">$</span>
+                <input class="sim-input" id="sim-input-3" placeholder="输入命令" onkeydown="if(event.key==='Enter')runSim(3)">
+                <button class="sim-btn" onclick="runSim(3)">运行</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0">
+            <div>
+              <h4 style="font-size:0.88rem;color:var(--accent);margin-bottom:0.5rem">📋 运行选项</h4>
+              <div class="cmd-cards" style="grid-template-columns:1fr">
+                <div class="cmd-card" onclick="execCmd(this, 'docker run -d --name my-nginx -p 8080:80 nginx', 3)">
+                  <div class="cmd-name">-d (后台运行)</div>
+                  <div class="cmd-desc">守护进程模式运行</div>
+                </div>
+                <div class="cmd-card" onclick="execCmd(this, 'docker run -it ubuntu bash', 3)">
+                  <div class="cmd-name">-it (交互模式)</div>
+                  <div class="cmd-desc">进入容器终端</div>
+                </div>
+                <div class="cmd-card" onclick="execCmd(this, 'docker run --rm nginx', 3)">
+                  <div class="cmd-name">--rm (自动清理)</div>
+                  <div class="cmd-desc">容器停止后自动删除</div>
+                </div>
+                <div class="cmd-card" onclick="execCmd(this, 'docker run -v /host/data:/container/data nginx', 3)">
+                  <div class="cmd-name">-v (挂载卷)</div>
+                  <div class="cmd-desc">挂载宿主机目录</div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4 style="font-size:0.88rem;color:var(--accent);margin-bottom:0.5rem">🔄 生命周期</h4>
+              <div class="cmd-cards" style="grid-template-columns:1fr">
+                <div class="cmd-card" onclick="execCmd(this, 'docker ps', 3)">
+                  <div class="cmd-name">docker ps</div>
+                  <div class="cmd-desc">列出运行中的容器</div>
+                </div>
+                <div class="cmd-card" onclick="execCmd(this, 'docker ps -a', 3)">
+                  <div class="cmd-name">docker ps -a</div>
+                  <div class="cmd-desc">列出所有容器（含已停止）</div>
+                </div>
+                <div class="cmd-card" onclick="execCmd(this, 'docker stop my-nginx', 3)">
+                  <div class="cmd-name">docker stop</div>
+                  <div class="cmd-desc">停止容器</div>
+                </div>
+                <div class="cmd-card" onclick="execCmd(this, 'docker start my-nginx', 3)">
+                  <div class="cmd-name">docker start</div>
+                  <div class="cmd-desc">启动已停止的容器</div>
+                </div>
+                <div class="cmd-card" onclick="execCmd(this, 'docker rm my-nginx', 3)">
+                  <div class="cmd-name">docker rm</div>
+                  <div class="cmd-desc">删除容器（需先停止）</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tip-box">
+            <div class="tip-label">💡 常用组合</div>
+            <code>docker run -d --name web -p 8080:80 -v /data:/usr/share/nginx/html nginx</code><br>
+            <span style="font-size:0.8rem;color:var(--text2)">后台运行名为 web 的 nginx，端口映射 8080→80，挂载数据卷</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 教程4：日常维护 ===== -->
+    <div class="tutorial-card reveal" id="t4">
+      <div class="tutorial-header" onclick="toggleTutorial(this)">
+        <div class="tutorial-header-left">
+          <div class="tutorial-num-badge">TUT-04</div>
+          <div>
+            <div class="tutorial-title-text">日志、进入容器与资源管理</div>
+            <div class="tutorial-desc-text">logs / exec / stats / inspect 等进阶操作</div>
+          </div>
+        </div>
+        <div class="tutorial-toggle">+</div>
+      </div>
+      <div class="tutorial-body">
+        <div class="tutorial-content">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0.8rem">
+            <div class="cmd-card" onclick="execCmd(this, 'docker logs my-nginx', 4)">
+              <div class="cmd-copy" onclick="event.stopPropagation();copyCmd(this)">复制</div>
+              <div class="cmd-name">docker logs -f my-nginx</div>
+              <div class="cmd-desc">实时查看容器日志 (-f 跟踪)</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker exec -it my-nginx bash', 4)">
+              <div class="cmd-name">docker exec -it</div>
+              <div class="cmd-desc">进入运行中的容器执行命令</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker exec my-nginx ls /usr/share/nginx/html', 4)">
+              <div class="cmd-name">docker exec [container] [cmd]</div>
+              <div class="cmd-desc">在容器内执行单条命令</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker inspect my-nginx', 4)">
+              <div class="cmd-name">docker inspect</div>
+              <div class="cmd-desc">查看容器详细配置信息</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker stats', 4)">
+              <div class="cmd-name">docker stats</div>
+              <div class="cmd-desc">实时监控容器 CPU/内存/网络</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker top my-nginx', 4)">
+              <div class="cmd-name">docker top</div>
+              <div class="cmd-desc">查看容器内运行的进程</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker diff my-nginx', 4)">
+              <div class="cmd-name">docker diff</div>
+              <div class="cmd-desc">查看容器文件系统变更</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker system df', 4)">
+              <div class="cmd-name">docker system df</div>
+              <div class="cmd-desc">查看 Docker 磁盘使用情况</div>
+            </div>
+          </div>
+
+          <div class="tip-box red-tip" style="margin-top:1rem">
+            <div class="tip-label">🧹 清理命令</div>
+            <code>docker system prune</code> — 清理未使用的镜像、容器、网络<br>
+            <code>docker container prune</code> — 清理已停止的容器<br>
+            <code>docker image prune -a</code> — 清理所有未使用的镜像
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 教程5：Dockerfile ===== -->
+    <div class="tutorial-card reveal" id="t5">
+      <div class="tutorial-header" onclick="toggleTutorial(this)">
+        <div class="tutorial-header-left">
+          <div class="tutorial-num-badge">TUT-05</div>
+          <div>
+            <div class="tutorial-title-text">Dockerfile 实战 — 构建自定义镜像</div>
+            <div class="tutorial-desc-text">编写 Dockerfile 并构建属于你自己的镜像</div>
+          </div>
+        </div>
+        <div class="tutorial-toggle">+</div>
+      </div>
+      <div class="tutorial-body">
+        <div class="tutorial-content">
+          <p style="color:var(--text2);margin-bottom:1rem;font-size:0.9rem">Dockerfile 是构建镜像的配方。下面是一个 Node.js 应用的示例 Dockerfile：</p>
+
+          <div class="dockerfile-editor">
+            <div class="dockerfile-toolbar">
+              <div class="toolbar-left">
+                <div class="dot" style="background:#ff5f56"></div>
+                <div class="dot" style="background:#ffbd2e"></div>
+                <div class="dot" style="background:#27c93f"></div>
+                <span style="font-size:0.75rem;color:var(--text2);margin-left:8px;font-family:monospace">Dockerfile</span>
+              </div>
+              <div class="dockerfile-tabs">
+                <div class="dockerfile-tab active">基础语法</div>
+                <div class="dockerfile-tab" onclick="showDFExample(this, 1)">Node.js 示例</div>
+                <div class="dockerfile-tab" onclick="showDFExample(this, 2)">Python 示例</div>
+              </div>
+            </div>
+            <div class="dockerfile-content" id="df-content">
+              <div class="dockerfile-linenums" id="df-lines"></div>
+              <div class="dockerfile-code" id="df-code"></div>
+            </div>
+          </div>
+
+          <div class="step-list" style="margin-top:1rem">
+            <div class="step-item">
+              <div class="step-content">
+                <p><strong>常用指令说明</strong></p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-content">
+                <p><code>FROM</code> — 指定基础镜像（必须的第一条指令）</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-content">
+                <p><code>RUN</code> — 执行 shell 命令（构建时运行）</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-content">
+                <p><code>COPY</code> / <code>ADD</code> — 复制文件到镜像中</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-content">
+                <p><code>WORKDIR</code> — 设置工作目录</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-content">
+                <p><code>EXPOSE</code> — 声明容器监听的端口</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-content">
+                <p><code>ENV</code> — 设置环境变量</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-content">
+                <p><code>CMD</code> / <code>ENTRYPOINT</code> — 容器启动时执行的命令</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmd-cards" style="margin-top:1rem">
+            <div class="cmd-card" onclick="execCmd(this, 'docker build -t my-app:latest .', 3)">
+              <div class="cmd-name">docker build -t my-app .</div>
+              <div class="cmd-desc">构建镜像（-t 指定标签，. 表示当前目录）</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker build -t my-app:v1 --no-cache .', 3)">
+              <div class="cmd-name">--no-cache</div>
+              <div class="cmd-desc">不使用缓存强制重新构建</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker tag my-app:latest my-registry.com/my-app:v1', 3)">
+              <div class="cmd-name">docker tag</div>
+              <div class="cmd-desc">给镜像打标签（添加版本）</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker push my-registry.com/my-app:v1', 3)">
+              <div class="cmd-name">docker push</div>
+              <div class="cmd-desc">推送镜像到仓库</div>
+            </div>
+          </div>
+
+          <div class="tip-box green-tip">
+            <div class="tip-label">✅ 最佳实践</div>
+            多层构建时合并 RUN 指令以减少镜像层数；使用 .dockerignore 排除不需要的文件；尽量使用官方轻量级镜像（如 alpine）减小体积
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 教程6：Docker Compose ===== -->
+    <div class="tutorial-card reveal" id="t6">
+      <div class="tutorial-header" onclick="toggleTutorial(this)">
+        <div class="tutorial-header-left">
+          <div class="tutorial-num-badge">TUT-06</div>
+          <div>
+            <div class="tutorial-title-text">Docker Compose — 多容器编排</div>
+            <div class="tutorial-desc-text">使用 docker-compose.yml 定义和运行多容器应用</div>
+          </div>
+        </div>
+        <div class="tutorial-toggle">+</div>
+      </div>
+      <div class="tutorial-body">
+        <div class="tutorial-content">
+          <p style="color:var(--text2);margin-bottom:1rem;font-size:0.9rem">Docker Compose 用于定义和运行多个容器服务。一个 <code>docker-compose.yml</code> 文件即可启动整套应用栈。</p>
+
+          <pre class="code-block"><span class="cmt"># docker-compose.yml — WordPress + MySQL 示例</span>
+<span class="kw">version</span>: <span class="str">'3.8'</span>
+
+<span class="kw">services</span>:
+  <span class="arg">db</span>:
+    <span class="arg">image</span>: <span class="str">mysql:8</span>
+    <span class="arg">volumes</span>:
+      - <span class="str">db_data:/var/lib/mysql</span>
+    <span class="arg">restart</span>: <span class="str">always</span>
+    <span class="arg">environment</span>:
+      <span class="arg">MYSQL_ROOT_PASSWORD</span>: <span class="str">secret</span>
+      <span class="arg">MYSQL_DATABASE</span>: <span class="str">wordpress</span>
+      <span class="arg">MYSQL_USER</span>: <span class="str">wp_user</span>
+      <span class="arg">MYSQL_PASSWORD</span>: <span class="str">wp_pass</span>
+
+  <span class="arg">wordpress</span>:
+    <span class="arg">depends_on</span>:
+      - <span class="str">db</span>
+    <span class="arg">image</span>: <span class="str">wordpress:latest</span>
+    <span class="arg">ports</span>:
+      - <span class="str">"8080:80"</span>
+    <span class="arg">restart</span>: <span class="str">always</span>
+    <span class="arg">environment</span>:
+      <span class="arg">WORDPRESS_DB_HOST</span>: <span class="str">db:3306</span>
+      <span class="arg">WORDPRESS_DB_USER</span>: <span class="str">wp_user</span>
+      <span class="arg">WORDPRESS_DB_PASSWORD</span>: <span class="str">wp_pass</span>
+
+<span class="kw">volumes</span>:
+  <span class="arg">db_data</span>:</pre>
+
+          <div class="cmd-cards">
+            <div class="cmd-card" onclick="execCmd(this, 'docker-compose up -d', 3)">
+              <div class="cmd-name">docker-compose up -d</div>
+              <div class="cmd-desc">后台启动所有服务</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker-compose ps', 3)">
+              <div class="cmd-name">docker-compose ps</div>
+              <div class="cmd-desc">查看运行状态</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker-compose logs -f wordpress', 3)">
+              <div class="cmd-name">docker-compose logs -f</div>
+              <div class="cmd-desc">跟踪指定服务日志</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker-compose down', 3)">
+              <div class="cmd-name">docker-compose down</div>
+              <div class="cmd-desc">停止并移除所有服务</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker-compose down -v', 3)">
+              <div class="cmd-name">docker-compose down -v</div>
+              <div class="cmd-desc">同时删除数据卷（⚠️ 数据会丢失）</div>
+            </div>
+            <div class="cmd-card" onclick="execCmd(this, 'docker-compose build', 3)">
+              <div class="cmd-name">docker-compose build</div>
+              <div class="cmd-desc">重新构建自定义镜像</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== 命令速查表 ===== -->
+<section id="cheatsheet" style="background:var(--surface);">
+  <div class="container reveal">
+    <div class="section-tag">§ 06 — 速查手册</div>
+    <h2 class="section-title">Docker 命令速查表</h2>
+    <p class="section-desc">收藏备用！最常用的 Docker 命令一览</p>
+
+    <div class="quick-commands">
+      <h3>🚀 快速命令面板</h3>
+      <div class="qc-grid">
+        <div class="qc-item" onclick="showCmdDetail(this)">
+          <span style="font-size:1.2rem">📦</span>
+          <div>
+            <div class="qc-cmd">docker pull [image]</div>
+            <div class="qc-desc">从仓库拉取镜像</div>
+          </div>
+        </div>
+        <div class="qc-item" onclick="showCmdDetail(this)">
+          <span style="font-size:1.2rem">🏃</span>
+          <div>
+            <div class="qc-cmd">docker run [options] [image]</div>
+            <div class="qc-desc">创建并启动容器</div>
+          </div>
+        </div>
+        <div class="qc-item" onclick="showCmdDetail(this)">
+          <span style="font-size:1.2rem">📋</span>
+          <div>
+            <div class="qc-cmd">docker ps [-a]</div>
+            <div class="qc-desc">列出容器 (-a 显示全部)</div>
+          </div>
+        </div>
+        <div class="qc-item" onclick="showCmdDetail(this)">
+          <span style="font-size:1.2rem">🔍</span>
+          <div>
+            <div class="qc-cmd">docker logs [-f] [container]</div>
+            <div class="qc-desc">查看容器日志</div>
+          </div>
+        </div>
+        <div class="qc-item" onclick="showCmdDetail(this)">
+          <span style="font-size:1.2rem">⚡</span>
+          <div>
+            <div class="qc-cmd">docker exec -it [c] [cmd]</div>
+            <div class="qc-desc">进入容器执行命令</div>
+          </div>
+        </div>
+        <div class="qc-item" onclick="showCmdDetail(this)">
+          <span style="font-size:1.2rem">🛑</span>
+          <div>
+            <div class="qc-cmd">docker stop [container]</div>
+            <div class="qc-desc">停止运行中的容器</div>
+          </div>
+        </div>
+        <div class="qc-item" onclick="showCmdDetail(this)">
+          <span style="font-size:1.2rem">▶️</span>
+          <div>
+            <div class="qc-cmd">docker start [container]</div>
+            <div class="qc-desc">启动已停止的容器</div>
+          </div>
+        </div>
+        <div class="qc-item" onclick="showCmdDetail(this)">
+          <span style="font-size:1.2rem">🗑️</span>
+          <div>
+            <div class="qc-cmd">docker rm [container]</div>
+            <div class="qc-desc">删除已停止的容器</div>
+          </div>
+        </div>
+        <div class="qc-item" onclick="showCmdDetail(this)">
+          <span style="font-size:1.2rem">🧹</span>
+          <div>
+            <div class="qc-cmd">docker system prune -a</div>
+            <div class="qc-desc">清理未使用的资源</div>
+          </div>
+        </div>
+        <div class="qc-item" onclick="showCmdDetail(this)">
+          <span style="font-size:1.2rem">📊</span>
+          <div>
+            <div class="qc-cmd">docker stats</div>
+            <div class="qc-desc">实时资源使用监控</div>
+          </div>
+        </div>
+        <div class="qc-item" onclick="showCmdDetail(this)">
+          <span style="font-size:1.2rem">🔨</span>
+          <div>
+            <div class="qc-cmd">docker build -t [name] .</div>
+            <div class="qc-desc">从 Dockerfile 构建镜像</div>
+          </div>
+        </div>
+        <div class="qc-item" onclick="showCmdDetail(this)">
+          <span style="font-size:1.2rem">📷</span>
+          <div>
+            <div class="qc-cmd">docker commit [c] [name:tag]</div>
+            <div class="qc-desc">从容器创建新镜像</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 常用选项速查 -->
+    <div style="margin-top:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem">
+      <div>
+        <h4 style="font-size:0.95rem;margin-bottom:0.8rem;color:var(--accent)">常用 run 选项</h4>
+        <div style="display:flex;flex-direction:column;gap:0.4rem">
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">-d</code><span style="color:var(--text2)">后台运行</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">-it</code><span style="color:var(--text2)">交互模式（分配终端）</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">-p 8080:80</code><span style="color:var(--text2)">端口映射（宿主机:容器）</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">-v /data:/app</code><span style="color:var(--text2)">目录挂载</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">--name myapp</code><span style="color:var(--text2)">给容器命名</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">--rm</code><span style="color:var(--text2)">停止后自动删除</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">-e KEY=val</code><span style="color:var(--text2)">设置环境变量</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">--network</code><span style="color:var(--text2)">指定网络</span></div>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size:0.95rem;margin-bottom:0.8rem;color:var(--accent)">常用 ps 选项</h4>
+        <div style="display:flex;flex-direction:column;gap:0.4rem">
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">-a</code><span style="color:var(--text2)">显示所有容器</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">-q</code><span style="color:var(--text2)">只显示容器 ID</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">-l</code><span style="color:var(--text2)">显示最近创建的</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">-s</code><span style="color:var(--text2)">显示文件大小</span></div>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size:0.95rem;margin-bottom:0.8rem;color:var(--accent)">常用 logs 选项</h4>
+        <div style="display:flex;flex-direction:column;gap:0.4rem">
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">-f</code><span style="color:var(--text2)">实时跟踪日志</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">--tail 100</code><span style="color:var(--text2)">显示最后 100 行</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">--since 1h</code><span style="color:var(--text2)">显示最近 1 小时的</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem"><code style="color:var(--green)">--details</code><span style="color:var(--text2)">显示详细信息</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 小测验 ===== -->
+<section id="quiz">
+  <div class="container reveal">
+    <div class="section-tag">§ 07 — 随堂测验</div>
+    <h2 class="section-title">知识小测验</h2>
+    <p class="section-desc">检验一下你对 Docker 的理解程度！</p>
+
+    <div class="quiz-section">
+      <!-- Q1 -->
+      <div class="quiz-card" id="quiz1">
+        <div class="quiz-q">Q1: 下面哪个命令可以从 Docker Hub 拉取 nginx 镜像？</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz(this, true, '#quiz1')">
+            <span class="opt-letter">A</span>
+            <span>docker pull nginx</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz1')">
+            <span class="opt-letter">B</span>
+            <span>docker push nginx</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz1')">
+            <span class="opt-letter">C</span>
+            <span>docker clone nginx</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz1')">
+            <span class="opt-letter">D</span>
+            <span>docker fetch nginx</span>
+          </div>
+        </div>
+        <div class="quiz-result" id="quiz1-result"></div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="quiz-card" id="quiz2">
+        <div class="quiz-q">Q2: Docker 容器与虚拟机的核心区别是什么？</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz2')">
+            <span class="opt-letter">A</span>
+            <span>容器比虚拟机更安全</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz2')">
+            <span class="opt-letter">B</span>
+            <span>虚拟机比容器启动更快</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, true, '#quiz2')">
+            <span class="opt-letter">C</span>
+            <span>容器共享宿主机操作系统内核</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz2')">
+            <span class="opt-letter">D</span>
+            <span>两者没有本质区别</span>
+          </div>
+        </div>
+        <div class="quiz-result" id="quiz2-result"></div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="quiz-card" id="quiz3">
+        <div class="quiz-q">Q3: 以下哪个 Dockerfile 指令用于设置容器启动时执行的命令？</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz3')">
+            <span class="opt-letter">A</span>
+            <span>RUN</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, true, '#quiz3')">
+            <span class="opt-letter">B</span>
+            <span>CMD 或 ENTRYPOINT</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz3')">
+            <span class="opt-letter">C</span>
+            <span>FROM</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz3')">
+            <span class="opt-letter">D</span>
+            <span>COPY</span>
+          </div>
+        </div>
+        <div class="quiz-result" id="quiz3-result"></div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="quiz-card" id="quiz4">
+        <div class="quiz-q">Q4: <code>docker run -d --name web -p 8080:80 nginx</code> 中 <code>-p 8080:80</code> 的含义是？</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz4')">
+            <span class="opt-letter">A</span>
+            <span>容器内端口 8080 映射到 80</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, true, '#quiz4')">
+            <span class="opt-letter">B</span>
+            <span>宿主机端口 8080 映射到容器端口 80</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz4')">
+            <span class="opt-letter">C</span>
+            <span>同时开放 8080 和 80 两个端口</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz4')">
+            <span class="opt-letter">D</span>
+            <span>容器使用 8080 和 80 两个端口</span>
+          </div>
+        </div>
+        <div class="quiz-result" id="quiz4-result"></div>
+      </div>
+
+      <!-- Q5 -->
+      <div class="quiz-card" id="quiz5">
+        <div class="quiz-q">Q5: 如何在后台运行一个名为 "app" 的容器，使用 3000 端口？</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz5')">
+            <span class="opt-letter">A</span>
+            <span>docker run -b --name app -p 3000:3000 node</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz5')">
+            <span class="opt-letter">B</span>
+            <span>docker start --name app -p 3000 node</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, true, '#quiz5')">
+            <span class="opt-letter">C</span>
+            <span>docker run -d --name app -p 3000:3000 node</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz(this, false, '#quiz5')">
+            <span class="opt-letter">D</span>
+            <span>docker exec -d --name app -p 3000 node</span>
+          </div>
+        </div>
+        <div class="quiz-result" id="quiz5-result"></div>
+      </div>
+    </div>
+
+    <div id="quiz-summary" class="tip-box green-tip" style="display:none;margin-top:1.5rem">
+      <div class="tip-label">🎉 测验完成</div>
+      <span id="quiz-score"></span>
+    </div>
+  </div>
+</section>
+
+<!-- 附加资源 -->
+<section style="background:var(--surface);">
+  <div class="container reveal">
+    <div class="section-tag">§ 08 — 延伸学习</div>
+    <h2 class="section-title">下一步学什么？</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem;margin-top:2rem">
+      <div class="concept-card">
+        <h3 style="color:var(--purple)">☸️ Kubernetes</h3>
+        <p style="color:var(--text2);font-size:0.9rem;margin-bottom:0.8rem">容器编排平台，用于管理大规模容器集群，实现自动化部署、扩缩容和负载均衡</p>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          <span class="tag purple">K8s</span><span class="tag purple">编排</span><span class="tag purple">集群</span>
+        </div>
+      </div>
+      <div class="concept-card">
+        <h3 style="color:var(--orange)">🔐 Docker Security</h3>
+        <p style="color:var(--text2);font-size:0.9rem;margin-bottom:0.8rem">学习容器安全最佳实践：用户命名空间、seccomp、AppArmor、SELinux、镜像扫描等</p>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          <span class="tag orange">安全</span><span class="tag orange">扫描</span><span class="tag orange">隔离</span>
+        </div>
+      </div>
+      <div class="concept-card">
+        <h3 style="color:var(--green)">⚙️ CI/CD + Docker</h3>
+        <p style="color:var(--text2);font-size:0.9rem;margin-bottom:0.8rem">将 Docker 集成到 GitHub Actions、GitLab CI、Jenkins 等持续集成/部署流水线</p>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          <span class="tag green">DevOps</span><span class="tag green">CI/CD</span><span class="tag green">自动化</span>
+        </div>
+      </div>
+      <div class="concept-card">
+        <h3 style="color:var(--cyan)">📊 Docker Monitor</h3>
+        <p style="color:var(--text2);font-size:0.9rem;margin-bottom:0.8rem">使用 Prometheus + Grafana 监控容器性能指标，搭建可视化仪表盘</p>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          <span class="tag" style="background:rgba(57,197,207,0.15);border-color:rgba(57,197,207,0.3);color:var(--cyan)">监控</span>
+          <span class="tag" style="background:rgba(57,197,207,0.15);border-color:rgba(57,197,207,0.3);color:var(--cyan)">Prometheus</span>
+          <span class="tag" style="background:rgba(57,197,207,0.15);border-color:rgba(57,197,207,0.3);color:var(--cyan)">Grafana</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Docker 全指南 · 互动式学习网页 · 使用纯 HTML/CSS/JS 构建</p>
+    <p style="margin-top:0.5rem;font-size:0.78rem;color:var(--border)">Generated with Claude Code · 2026</p>
+  </div>
+</footer>
+
+<script>
+// ===== 滚动进度条 =====
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docHeight > 0 ? (scrollTop / docHeight * 100) : 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+});
+
+// ===== 滚动动画 =====
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ===== 导航高亮 =====
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav .links a');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(section => {
+    const top = section.offsetTop - 100;
+    if (window.scrollY >= top) current = section.getAttribute('id');
+  });
+  navLinks.forEach(a => {
+    a.classList.remove('active');
+    if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+  });
+});
+
+// ===== 教程展开/折叠 =====
+let completedSteps = new Set();
+
+function toggleTutorial(header) {
+  const card = header.parentElement;
+  card.classList.toggle('open');
+
+  const id = card.id;
+  if (card.classList.contains('open') && !completedSteps.has(id)) {
+    completedSteps.add(id);
+    updateProgress();
+  }
+}
+
+function updateProgress() {
+  const total = 5; // 5个核心教程
+  const done = Math.min(completedSteps.size, total);
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('main-progress').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = pct + '%';
+
+  // 更新步骤指示器
+  document.querySelectorAll('.progress-step').forEach((el, i) => {
+    el.classList.remove('done', 'active');
+    if (i < done) el.classList.add('done');
+    else if (i === done) el.classList.add('active');
+  });
+}
+
+function scrollToSection(id) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ===== 命令模拟器 =====
+const simResponses = {
+  // 模拟器1
+  1: {
+    'docker version': `[回显] Client: Docker Engine - Community
+ Version:           26.1.0
+ API version:       1.45
+ Go version:        go1.21.10
+ Git commit:        4b9b853
+ OS/Arch:           windows/amd64
+
+[回显] Server: Docker Engine - Community
+ Engine:
+  Version:          26.1.0
+  API version:      1.45 (minimum version 1.24)
+  Go version:       go1.21.10
+  OS/Arch:          linux/amd64`,
+    'docker info': `[回显] Client Version: 26.1.0
+ Server Version: 26.1.0
+ Containers: 3
+  Running: 1
+  Paused: 0
+  Stopped: 2
+ Images: 12
+ Server Version: 26.1.0
+ Operating System: Docker Desktop
+ Kernel Version: 6.6.22-linuxkit+Darwin`,
+    'docker run hello-world': `[回显] Hello from Docker!
+ This message shows that your installation appears to be working correctly.
+
+ To generate this message, Docker took the following steps:
+  1. The Docker client contacted the Docker daemon.
+  2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+  3. The Docker daemon created a new container from that image which runs the executable.
+  4. The Docker daemon streamed that output to the Docker client, which sent it to your terminal.`,
+    'docker ps': `[回显] CONTAINER ID   IMAGE   COMMAND   CREATED   STATUS   PORTS   NAMES
+ (当前没有运行中的容器)`,
+  },
+  // 模拟器2
+  2: {
+    'docker search nginx': `[回显] NAME                      DESCRIPTION                STARS   OFFICIAL
+ nginx                   Official build of Nginx.       21000   [OK]
+ unit                    Official build of NGINX Unit   120     [OK]
+ openresty               Nginx with Lua mod...           200     [OK]`,
+    'docker pull nginx:latest': `[回显] latest: Pulling from library/nginx
+ a6bd7103c12e: Downloading [=====>     ]  7.23MB/61.2MB
+ b4df9g0022f: Downloading [=========>  ]  12.1MB/61.2MB
+ ...
+ Status: Downloaded newer image for nginx:latest
+ ✅ nginx:latest 镜像拉取成功 (61.2MB)`,
+    'docker images': `[回显] REPOSITORY   TAG       IMAGE ID       SIZE
+ nginx        latest    a6bd7103c12e   187MB
+ ubuntu       22.04     7ab98be123cd   77MB
+ hello-world  latest    feb5d9fea6a5   13.3kB
+ node         20        3c23d8000e11   1.1GB`,
+    'docker rmi nginx:latest': `[回显] Untagged: nginx:latest
+ Deleted: sha256:a6bd7103c12e...
+ ✅ 镜像删除成功`,
+    'docker pull ubuntu:22.04': `[回显] 22.04: Pulling from library/ubuntu
+ Digest: sha256:cc8e36a89abc...
+ Status: Image is up to date for ubuntu:22.04
+ ✅ ubuntu:22.04 已是最新版本 (77MB)`,
+    'docker rmi $(docker images -q)': `[回显] ⚠️  强制删除所有镜像...
+ This will remove all images. Are you sure?
+ (在真实环境中执行需加 -f 参数强制删除)`,
+  },
+  // 模拟器3
+  3: {
+    'docker run -d --name my-nginx -p 8080:80 nginx': `[回显] ✅ 容器 my-nginx 已创建并后台运行
+ Container ID: 7a3d9f2e...
+ Port Mapping: localhost:8080 → container:80
+ Status: Running
+ 访问: http://localhost:8080`,
+    'docker run -it ubuntu bash': `[回显] ✅ 容器已启动，进入交互模式...
+ root@7a3d9f2e:/# _
+ (容器已启动，按 Ctrl+P+Q 可退出而不停止)`,
+    'docker run --rm nginx': `[回显] ✅ 容器启动，停止后将自动删除
+ (添加了 --rm 标志，容器退出后自动清理)`,
+    'docker run -v /host/data:/container/data nginx': `[回显] ✅ 容器启动，已挂载数据卷
+ Host:   /host/data
+ Container: /container/data
+ Status: 共享存储已就绪`,
+    'docker ps': `[回显] CONTAINER ID   IMAGE   STATUS       PORTS                  NAMES
+ 7a3d9f2e       nginx   Up 2 hours   0.0.0.0:8080->80/tcp   my-nginx`,
+    'docker ps -a': `[回显] CONTAINER ID   IMAGE       STATUS       PORTS       NAMES
+ 7a3d9f2e       nginx       Up 2 hours   8080->80     my-nginx
+ 3b2e8c1a       ubuntu      Exited (0)  2 mins ago   hopeful_roentgen`,
+    'docker stop my-nginx': `[回显] ✅ my-nginx 已停止`,
+    'docker start my-nginx': `[回显] ✅ my-nginx 已重新启动
+ Status: Running`,
+    'docker rm my-nginx': `[回显] ✅ my-nginx 已删除
+ (请确保容器已先停止: docker stop my-nginx)`,
+    'docker build -t my-app:latest .': `[回显] [+] Building 12.3s (8/8) FINISHED
+ => [internal] load build definition from Dockerfile
+ => [internal] load .dockerignore
+ => [1/4] FROM node:20-alpine
+ => [2/4] WORKDIR /app
+ => [3/4] COPY package*.json ./
+ => [4/4] RUN npm ci --production
+ => naming to docker.io/library/my-app:latest
+ ✅ 镜像构建成功: my-app:latest`,
+    'docker build -t my-app:v1 --no-cache .': `[回显] [+] Building 45.2s (8/8) FINISHED
+ => [1/8] FROM node:20-alpine AS build
+ ...
+ ⚠️  使用了 --no-cache，未使用构建缓存
+ ✅ 镜像构建成功: my-app:v1`,
+    'docker tag my-app:latest my-registry.com/my-app:v1': `[回显] ✅ 镜像标签已创建: my-registry.com/my-app:v1`,
+    'docker push my-registry.com/my-app:v1': `[回显] The push refers to repository [my-registry.com/my-app]
+ v1: digest: sha256:abc123...
+ Count: 3
+ ✅ 镜像推送成功!`,
+    'docker-compose up -d': `[回显] [+] Running 2/2
+ ✅ Container db         Started
+ ✅ Container wordpress  Started
+ Stack is up and running!
+ 访问 WordPress: http://localhost:8080`,
+    'docker-compose ps': `[回显] NAME        IMAGE         STATUS
+ db         mysql:8       Up 2 minutes
+ wordpress  wordpress    Up 2 minutes (healthy)`,
+    'docker-compose logs -f wordpress': `[回显] wordpress  | [INFO] Starting Apache...
+ wordpress  | AH00558: apache2: Could not reliably determine...
+ ✅ 正在实时跟踪 wordpress 日志...`,
+    'docker-compose down': `[回显] [+] Running 2/2
+ ✅ Container wordpress  Stopped
+ ✅ Container db          Stopped
+ ✅ Network removed
+ Stack 已停止`,
+    'docker-compose down -v': `[回显] ⚠️  将删除所有卷，数据将永久丢失!
+ [+] Running 2/2
+ ✅ Container removed
+ ✅ Volume removed
+ ⚠️  数据卷已删除，请谨慎操作！`,
+    'docker-compose build': `[回显] [+] Building 2/2
+ ✅ db       Skipped (nothing to build)
+ ✅ wordpress Built in 15.3s
+ 镜像重新构建完成`,
+  },
+  // 模拟器4
+  4: {
+    'docker logs my-nginx': `[回显] 172.17.0.1 - - [16/Apr/2026:10:00:01 +0000] "GET / HTTP/1.1" 200 615 "-" "Mozilla/5.0..."
+ 172.17.0.1 - - [16/Apr/2026:10:00:05 +0000] "GET /favicon.ico HTTP/1.1" 404 169 "-" "Mozilla/5.0..."
+ 172.17.0.1 - - [16/Apr/2026:10:01:30 +0000] "GET / HTTP/1.1" 200 615 "-" "curl/8.1.0..."`,
+    'docker exec -it my-nginx bash': `[回显] ✅ 已进入容器 my-nginx
+ root@7a3d9f2e:/# _
+ (输入 exit 退出容器终端)`,
+    'docker exec my-nginx ls /usr/share/nginx/html': `[回显] 50x.html
+ index.html
+ favicon.ico`,
+    'docker inspect my-nginx': `[回显] [
+   {
+     "Id": "7a3d9f2e...",
+     "Name": "/my-nginx",
+     "Config": {
+       "Image": "nginx",
+       "ExposedPorts": { "80/tcp": {} }
+     },
+     "State": { "Status": "running", "Running": true }
+   }
+ ]`,
+    'docker stats': `[回显] CONTAINER ID  NAME        CPU %   MEM USAGE / LIMIT     MEM %   NET I/O
+ 7a3d9f2e      my-nginx    0.32%   6.5MiB / 1.952GiB   0.33%   1.2MB / 2.3MB
+ 4b8e1a3f      redis       0.15%   12.1MiB / 1.952GiB 0.62%   456KB / 890KB`,
+    'docker top my-nginx': `[回显] UID     PID    PPID   CMD
+ root   19823  19807  nginx: master process
+ nobody 19851  19823  nginx: worker process`,
+    'docker diff my-nginx': `[回显] C /var/log/nginx
+ A /var/log/nginx/access.log
+ C /run`,
+    'docker system df': `[回显] TYPE            TOTAL     ACTIVE    SIZE
+ Images            12        3         3.24GB
+ Containers         5        1         0B
+ Local Volumes      3        2         12.4MB
+ Build Cache                  5         128MB`,
+  }
+};
+
+let simCounters = {};
+let typingTimeouts = {};
+
+function runSim(num) {
+  const input = document.getElementById('sim-input-' + num);
+  const cmd = input.value.trim();
+  if (!cmd) return;
+
+  const output = document.getElementById('sim-output-' + num);
+  const fullCmd = cmd;
+
+  // 追加命令到输出
+  output.textContent += '\n\n$ ' + cmd + '\n';
+
+  // 模拟输出
+  let response = null;
+  if (simResponses[num] && simResponses[num][cmd]) {
+    response = simResponses[num][cmd];
+  } else {
+    // 尝试匹配部分
+    const keys = simResponses[num] ? Object.keys(simResponses[num]) : [];
+    const match = keys.find(k => k === cmd || k.startsWith(cmd.split(' ')[0]));
+    if (match) {
+      response = simResponses[num][match];
+    }
+  }
+
+  if (response) {
+    typeText(output, response, () => {});
+  } else {
+    typeText(output, `bash: ${cmd}: command not found\n(此为模拟环境，输入以下有效命令体验:\n  docker version, docker info, docker ps, docker images, docker run ...)`,
+      () => {});
+  }
+
+  input.value = '';
+  input.focus();
+}
+
+function typeText(el, text, callback) {
+  // 简单快速显示（去掉打字机效果以避免卡顿）
+  el.textContent += text;
+  el.scrollTop = el.scrollHeight;
+  if (callback) callback();
+}
+
+function execCmd(card, cmd, simNum) {
+  // 填充到模拟器
+  const input = document.getElementById('sim-input-' + simNum);
+  if (!input) return;
+  input.value = cmd;
+  input.focus();
+
+  // 高亮卡片
+  document.querySelectorAll('.cmd-card').forEach(c => c.style.boxShadow = '');
+  card.style.boxShadow = '0 0 0 2px var(--accent)';
+
+  // 自动触发运行
+  setTimeout(() => runSim(simNum), 200);
+}
+
+function copyCmd(btn) {
+  const cmd = btn.parentElement.querySelector('.cmd-name').textContent;
+  navigator.clipboard.writeText(cmd).then(() => {
+    btn.textContent = '✓ 已复制';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '复制';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+
+// ===== 测验系统 =====
+let quizScore = 0;
+let quizAnswered = 0;
+
+function checkQuiz(optionEl, correct, quizId) {
+  const card = document.querySelector(quizId);
+  const opts = card.querySelectorAll('.quiz-option');
+  const result = card.querySelector('.quiz-result');
+  const quizNum = quizId.replace('#quiz', '');
+  const resultId = 'quiz' + quizNum + '-result';
+
+  if (card.dataset.answered === 'true') return;
+  card.dataset.answered = 'true';
+
+  opts.forEach(opt => opt.style.pointerEvents = 'none');
+
+  if (correct) {
+    optionEl.classList.add('correct');
+    quizScore++;
+    result.textContent = '✅ 回答正确！';
+    result.className = 'quiz-result show correct-res';
+  } else {
+    optionEl.classList.add('wrong');
+    // 显示正确答案
+    opts.forEach(opt => {
+      if (opt.onclick.toString().includes('true')) {
+        opt.classList.add('correct');
+      }
+    });
+    result.textContent = '❌ 回答错误，正确答案是 ' +
+      (optionEl.querySelector('.opt-letter').textContent === 'A' ? 'B' :
+       optionEl.querySelector('.opt-letter').textContent === 'B' ? 'C' :
+       optionEl.querySelector('.opt-letter').textContent === 'C' ? 'C' : 'B');
+    result.className = 'quiz-result show wrong-res';
+  }
+
+  quizAnswered++;
+  if (quizAnswered >= 5) {
+    const summary = document.getElementById('quiz-summary');
+    const pct = Math.round((quizScore / 5) * 100);
+    summary.style.display = 'block';
+    document.getElementById('quiz-score').textContent =
+      `你的得分: ${quizScore}/5 (${pct}%) ` +
+      (pct >= 80 ? '🎉 太棒了！你已掌握 Docker 基础！' :
+       pct >= 60 ? '👍 不错的开始，继续加油！' :
+       '💪 多复习教程内容，再试一次！');
+  }
+}
+
+// ===== Dockerfile 示例 =====
+const dfExamples = {
+  0: [
+    { num: 1, text: '<span class="cmt"># Dockerfile 基础语法</span>' },
+    { num: 2, text: '<span class="kw">FROM</span> <span class="val">ubuntu:22.04</span>          <span class="cmt"># ① 基础镜像（必须）</span>' },
+    { num: 3, text: '<span class="cmt"># 注释说明</span>' },
+    { num: 4, text: '<span class="kw">RUN</span> <span class="arg">apt-get update && apt-get install -y nginx</span>   <span class="cmt"># ② 构建时执行命令</span>' },
+    { num: 5, text: '<span class="kw">COPY</span> <span class="arg">./src /var/www/html</span>          <span class="cmt"># ③ 复制文件到镜像</span>' },
+    { num: 6, text: '<span class="kw">WORKDIR</span> <span class="arg">/var/www/html</span>           <span class="cmt"># ④ 设置工作目录</span>' },
+    { num: 7, text: '<span class="kw">ENV</span> <span class="arg">NODE_ENV=production</span>        <span class="cmt"># ⑤ 环境变量</span>' },
+    { num: 8, text: '<span class="kw">EXPOSE</span> <span class="arg">80</span>                 <span class="cmt"># ⑥ 声明端口</span>' },
+    { num: 9, text: '<span class="kw">CMD</span> <span class="arg">["nginx", "-g", "daemon off;"]</span>   <span class="cmt"># ⑦ 启动命令</span>' },
+  ],
+  1: [
+    { num: 1, text: '<span class="cmt"># Node.js 应用 Dockerfile</span>' },
+    { num: 2, text: '<span class="kw">FROM</span> <span class="val">node:20-alpine</span> <span class="cmt">AS builder</span>' },
+    { num: 3, text: '<span class="kw">WORKDIR</span> <span class="arg">/app</span>' },
+    { num: 4, text: '<span class="kw">COPY</span> <span class="arg">package*.json ./</span>' },
+    { num: 5, text: '<span class="kw">RUN</span> <span class="arg">npm ci --only=production</span>' },
+    { num: 6, text: '<span class="kw">COPY</span> <span class="arg">. .</span>' },
+    { num: 7, text: '<span class="kw">RUN</span> <span class="arg">npm run build</span>' },
+    { num: 8, text: '' },
+    { num: 9, text: '<span class="kw">FROM</span> <span class="val">node:20-alpine</span>' },
+    { num: 10, text: '<span class="kw">WORKDIR</span> <span class="arg">/app</span>' },
+    { num: 11, text: '<span class="kw">COPY</span> <span class="arg">--from=builder /app/dist ./dist</span>' },
+    { num: 12, text: '<span class="kw">COPY</span> <span class="arg">--from=builder /app/node_modules ./node_modules</span>' },
+    { num: 13, text: '<span class="kw">ENV</span> <span class="arg">NODE_ENV=production PORT=3000</span>' },
+    { num: 14, text: '<span class="kw">EXPOSE</span> <span class="arg">3000</span>' },
+    { num: 15, text: '<span class="kw">CMD</span> <span class="arg">["node", "dist/index.js"]</span>' },
+  ],
+  2: [
+    { num: 1, text: '<span class="cmt"># Python Flask 应用 Dockerfile</span>' },
+    { num: 2, text: '<span class="kw">FROM</span> <span class="val">python:3.12-slim</span>' },
+    { num: 3, text: '' },
+    { num: 4, text: '<span class="kw">WORKDIR</span> <span class="arg">/app</span>' },
+    { num: 5, text: '' },
+    { num: 6, text: '<span class="cmt"># 先复制依赖文件，优化构建缓存</span>' },
+    { num: 7, text: '<span class="kw">COPY</span> <span class="arg">requirements.txt .</span>' },
+    { num: 8, text: '<span class="kw">RUN</span> <span class="arg">pip install --no-cache-dir -r requirements.txt</span>' },
+    { num: 9, text: '' },
+    { num: 10, text: '<span class="cmt"># 再复制应用代码</span>' },
+    { num: 11, text: '<span class="kw">COPY</span> <span class="arg">app.py .</span>' },
+    { num: 12, text: '<span class="kw">COPY</span> <span class="arg">templates/ ./templates/</span>' },
+    { num: 13, text: '<span class="kw">COPY</span> <span class="arg">static/ ./static/</span>' },
+    { num: 14, text: '' },
+    { num: 15, text: '<span class="kw">ENV</span> <span class="arg">FLASK_ENV=production</span>' },
+    { num: 16, text: '<span class="kw">EXPOSE</span> <span class="arg">5000</span>' },
+    { num: 17, text: '<span class="kw">CMD</span> <span class="arg">["flask", "run", "--host=0.0.0.0"]</span>' },
+  ]
+};
+
+function showDFExample(tabEl, idx) {
+  document.querySelectorAll('.dockerfile-tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  renderDF(dfExamples[idx]);
+}
+
+function renderDF(lines) {
+  const linesEl = document.getElementById('df-lines');
+  const codeEl = document.getElementById('df-code');
+  linesEl.innerHTML = lines.map(l => l.num).join('\n');
+  codeEl.innerHTML = lines.map(l => l.text || '&nbsp;').join('\n');
+}
+
+// 初始化 Dockerfile 显示
+renderDF(dfExamples[0]);
+
+// ===== 快速命令提示 =====
+function showCmdDetail(item) {
+  const cmd = item.querySelector('.qc-cmd').textContent;
+  const desc = item.querySelector('.qc-desc').textContent;
+
+  // 简单高亮反馈
+  item.style.borderColor = 'var(--accent)';
+  item.style.background = 'rgba(88,166,255,0.08)';
+  setTimeout(() => {
+    item.style.borderColor = '';
+    item.style.background = '';
+  }, 1000);
+
+  // 尝试复制
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(cmd).then(() => {
+      const copyEl = document.createElement('span');
+      copyEl.textContent = ' ✓ 已复制';
+      copyEl.style.color = 'var(--green)';
+      copyEl.style.fontSize = '0.75rem';
+      item.querySelector('.qc-desc').appendChild(copyEl);
+      setTimeout(() => copyEl.remove(), 1500);
+    });
+  }
+}
+
+// 平滑滚动到锚点
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
+
+</body>
+</html>

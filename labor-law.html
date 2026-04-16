@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>打工人劳动法手册 · 官方全文</title>
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #e0dbd3;
+    --accent: #b91c1c;
+    --text: #1a1a1a;
+    --text2: #555;
+    --text3: #999;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* 鼠标跟随光 */
+  .spotlight-layer {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0;
+    overflow: hidden;
+  }
+  .spotlight-layer .orb {
+    position: absolute; border-radius: 50%;
+    pointer-events: none; filter: blur(70px);
+    transition: left 0.12s, top 0.12s;
+    transform: translate(-50%,-50%);
+  }
+  .spotlight-layer .orb-1 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(185,28,28,0.10), transparent 70%);
+    left: var(--mx,30%); top: var(--my,40%);
+  }
+  .spotlight-layer .orb-2 {
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(30,64,175,0.07), transparent 70%);
+    left: calc(var(--mx,70%) - 175px); top: calc(var(--my,60%) - 175px);
+  }
+
+  /* z-index层 */
+  header, .warn-bar, .controls, main, footer { position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    background: var(--accent);
+    color: white;
+    padding: 2.5rem 2rem 2rem;
+  }
+  .header-inner { max-width: 860px; margin: 0 auto; }
+  .header-badge {
+    display: inline-block; padding: 0.25rem 0.8rem;
+    border: 1px solid rgba(255,255,255,0.3); border-radius: 100px;
+    font-size: 0.78rem; margin-bottom: 0.8rem; opacity: 0.85;
+  }
+  header h1 { font-size: clamp(1.5rem, 5vw, 2rem); font-weight: 700; margin-bottom: 0.5rem; }
+  header p { font-size: 0.95rem; opacity: 0.85; max-width: 600px; line-height: 1.6; }
+
+  /* 提示条 */
+  .warn-bar {
+    background: #fefce8; border-bottom: 1px solid #fde68a;
+    padding: 0.55rem 2rem; text-align: center;
+    font-size: 0.8rem; color: #92400e;
+  }
+
+  /* 搜索区域 */
+  .controls {
+    max-width: 860px; margin: 0 auto;
+    padding: 1.2rem 1.5rem 0;
+  }
+  .search-box { position: relative; margin-bottom: 0.8rem; }
+  .search-box input {
+    width: 100%; padding: 0.75rem 1rem 0.75rem 2.8rem;
+    border: 2px solid var(--border); border-radius: 12px;
+    font-size: 1rem; font-family: inherit;
+    background: var(--surface); outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(185,28,28,0.1);
+  }
+  .search-box .icon {
+    position: absolute; left: 10px; top: 50%;
+    transform: translateY(-50%); opacity: 0.45;
+  }
+  .search-box .clear-btn {
+    position: absolute; right: 10px; top: 50%;
+    transform: translateY(-50%);
+    background: var(--surface2); border: none; border-radius: 50%;
+    width: 22px; height: 22px; cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+    font-size: 0.75rem; color: var(--text3);
+  }
+  .search-box .clear-btn.show { display: flex; }
+
+  /* 场景标签 */
+  .scenario-filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.4rem; }
+  .scenario-filters button {
+    padding: 0.3rem 0.8rem;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    background: white; font-family: inherit;
+    font-size: 0.83rem; color: var(--text2);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .scenario-filters button:hover { border-color: var(--accent); color: var(--accent); }
+  .scenario-filters button.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  .result-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.6rem; font-size: 0.82rem; color: var(--text3);
+  }
+  .result-meta select {
+    padding: 0.25rem 0.5rem; border: 1px solid var(--border);
+    border-radius: 6px; font-family: inherit; font-size: 0.82rem;
+    background: white; cursor: pointer;
+  }
+
+  /* 列表 */
+  main { max-width: 860px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+
+  .articles { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  /* 单条条目 */
+  .item {
+    background: white; border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .item:hover { box-shadow: 0 3px 14px rgba(0,0,0,0.07); }
+
+  /* 紧凑视图（默认 / 无搜索时） */
+  .item-compact {
+    display: flex; align-items: center; gap: 0.8rem;
+    padding: 0.7rem 1rem;
+  }
+  .item-num {
+    flex-shrink: 0; width: 44px; height: 44px;
+    background: var(--surface2); border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; line-height: 1;
+  }
+  .item-num .l1 { font-size: 0.52rem; color: var(--text3); }
+  .item-num .l2 { font-size: 1rem; font-weight: 700; color: var(--accent); margin-top: 1px; }
+  .item-title { flex: 1; font-size: 0.93rem; font-weight: 600; }
+  .item-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.25rem; }
+  .item:not(.has-body) .item-tags { display: none; }
+  .item:not(.has-body) .item-title { color: var(--text2); }
+
+  /* 展开视图（有搜索结果时） */
+  .item.has-body .item-compact { border-bottom: 1px solid var(--surface2); }
+  .item-body {
+    display: none; padding: 0.9rem 1rem;
+  }
+  .item.has-body .item-body { display: block; }
+
+  .item-text {
+    font-size: 0.88rem; color: #2d2d2d; line-height: 2;
+    padding-left: 0.8rem; border-left: 3px solid #fca5a5;
+  }
+
+  /* 标签颜色 */
+  .tag { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 500; }
+  .tag-work     { background:#ecfdf5; color:#166534; }
+  .tag-contract{ background:#f3e8ff; color:#6b21a8; }
+  .tag-hours    { background:#ede9fe; color:#4c1d95; }
+  .tag-overtime{ background:#fff7ed; color:#9a3412; }
+  .tag-leave    { background:#eff6ff; color:#1e40af; }
+  .tag-salary   { background:#fefce8; color:#854d0e; }
+  .tag-social   { background:#f0fdfa; color:#115e59; }
+  .tag-safety   { background:#f0fdf4; color:#14532d; }
+  .tag-resign   { background:#fff1f2; color:#9f1239; }
+  .tag-dispute  { background:#fdf4ff; color:#86198f; }
+  .tag-discipline{ background:#f5f5f4; color:#44403c; }
+  .tag-rest     { background:#ecfeff; color:#0e7490; }
+  .tag-women    { background:#fdf2f8; color:#9d174d; }
+
+  /* 高亮 */
+  mark { background:#fef08a; color:inherit; border-radius:2px; padding:0 1px; }
+
+  /* 无结果 */
+  .no-results { text-align:center; padding:3.5rem 1rem; color:var(--text3); }
+  .no-results .icon { font-size:2.5rem; margin-bottom:0.8rem; }
+
+  /* 提示语 */
+  .hint-bar {
+    background: white; border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.2rem;
+    font-size: 0.88rem; color: var(--text2);
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    margin-bottom: 0.8rem;
+  }
+  .hint-bar .emoji { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .hint-bar.hide { display: none; }
+
+  footer {
+    max-width: 860px; margin: 0 auto;
+    padding: 2rem 1.5rem 3rem; border-top: 1px solid var(--border);
+    font-size: 0.82rem; color: var(--text3); line-height: 1.8;
+  }
+  footer h4 { font-size: 0.9rem; color: var(--text2); margin-bottom: 0.4rem; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+  .item { animation: fadeUp 0.2s ease both; }
+
+  @media (max-width: 600px) {
+    header { padding: 2rem 1rem 1.5rem; }
+    main, .controls { padding-left: 1rem; padding-right: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 鼠标跟随光 -->
+<div class="spotlight-layer" id="spotlight">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <div class="header-badge">⚖️ 法律工具</div>
+    <h1>打工人劳动法手册</h1>
+    <p>收录《劳动法》全文 · 模糊搜索 · 快速定位场景</p>
+  </div>
+</header>
+
+<div class="warn-bar">⚠️ 仅供参考，不构成法律意见。劳动争议建议咨询律师或申请劳动仲裁。</div>
+
+<div class="controls">
+  <div class="scenario-filters" id="filters">
+    <button class="active" data-filter="all">全部</button>
+    <button data-filter="work">入职签订</button>
+    <button data-filter="contract">劳动合同</button>
+    <button data-filter="hours">工时制度</button>
+    <button data-filter="overtime">加班工资</button>
+    <button data-filter="leave">请假休假</button>
+    <button data-filter="salary">工资报酬</button>
+    <button data-filter="social">社会保险</button>
+    <button data-filter="resign">离职补偿</button>
+    <button data-filter="dispute">劳动争议</button>
+    <button data-filter="safety">劳动保护</button>
+    <button data-filter="women">女职工保护</button>
+  </div>
+  <div class="search-box">
+    <span class="icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="输入关键词，如"试用期""二倍工资""经济补偿""…" autocomplete="off">
+    <button class="clear-btn" id="clearBtn" title="清空搜索">✕</button>
+  </div>
+  <div class="result-meta">
+    <span id="resultLabel">共 103 条</span>
+    <select id="sortSelect">
+      <option value="default">按章节排序</option>
+      <option value="number">按条款号排序</option>
+    </select>
+  </div>
+</div>
+
+<main>
+  <div class="hint-bar" id="hintBar">
+    <span class="emoji">💡</span>
+    <span>输入关键词搜索匹配的完整条文，例如输入"<strong>加班</strong>"可找到所有加班相关的法律依据</span>
+  </div>
+  <div class="articles" id="articlesList"></div>
+</main>
+
+<footer>
+  <h4>📖 法律来源</h4>
+  <p>《中华人民共和国劳动法》2018年12月29日第十三届全国人大常委会第七次会议修正，共十三章一百零七条，原文未经任何删改。<br>查阅原文：国家法律法规数据库 falvfagui.cn</p>
+</footer>
+
+<script>
+// ===== 数据 =====
+const lawData = [
+{ id:1,  title:"劳动法立法宗旨和适用范围",      scenarios:["work","contract"], tags:[{t:"work",l:"入职签订"},{t:"contract",l:"劳动合同"}],
+text:"为了保护劳动者的合法权益，调整劳动关系，建立和维护适应社会主义市场经济的劳动制度，促进经济发展和社会进步，根据宪法，制定本法。\n在中华人民共和国境内的企业、个体经济组织（以下统称用人单位）和与之形成劳动关系的劳动者，适用本法。\n国家机关、事业组织、社会团体和与之建立劳动合同关系的劳动者，依照本法执行。" },
+
+{ id:2,  title:"劳动者权利",                    scenarios:["work","salary"], tags:[{t:"work",l:"入职签订"},{t:"salary",l:"工资报酬"}],
+text:"劳动者享有平等就业和选择职业的权利、取得劳动报酬的权利、休息休假的权利、获得劳动安全卫生保护的权利、接受职业技能培训的权利、享受社会保险和福利的权利、提请劳动争议处理的权利以及法律规定的其他劳动权利。\n劳动者应当完成劳动任务，提高职业技能，执行劳动安全卫生规程，遵守劳动纪律和职业道德。" },
+
+{ id:3,  title:"国家促进就业",                    scenarios:["work"], tags:[{t:"work",l:"入职签订"}],
+text:"国家采取各种措施，促进就业，扩大就业机会，鼓励企业、事业组织、社会团体在法律、行政法规规定的范围内兴办产业或者拓展经营，增加就业。" },
+
+{ id:4,  title:"就业平等与反歧视",              scenarios:["work"], tags:[{t:"work",l:"入职签订"}],
+text:"劳动者就业，不因民族、种族、性别、宗教信仰不同而受歧视。\n妇女享有与男子平等的就业权利。在录用职工时，除国家规定的不适合妇女的工种或者岗位外，不得以性别为由拒绝录用妇女或者提高对妇女的录用标准。" },
+
+{ id:5,  title:"职业教育发展",                    scenarios:["work"], tags:[{t:"work",l:"入职签订"}],
+text:"国家通过各种途径，采取各种措施，发展职业培训事业，开发劳动者的职业技能，提高劳动者素质，增强劳动者的就业能力和工作能力。" },
+
+{ id:6,  title:"劳动关系建立",                   scenarios:["work","contract"], tags:[{t:"work",l:"入职签订"},{t:"contract",l:"劳动合同"}],
+text:"建立劳动关系应当订立劳动合同。" },
+
+{ id:7,  title:"劳动合同订立原则",               scenarios:["work","contract"], tags:[{t:"work",l:"入职签订"},{t:"contract",l:"劳动合同"}],
+text:"订立和变更劳动合同，应当遵循平等自愿、协商一致的原则，不得违反法律、行政法规的规定。\n劳动合同依法订立即具有法律约束力，当事人必须履行劳动合同规定的义务。" },
+
+{ id:8,  title:"试用期规定",                     scenarios:["work","contract"], tags:[{t:"work",l:"入职签订"},{t:"contract",l:"劳动合同"}],
+text:"劳动合同可以约定试用期。试用期不得超过六个月。" },
+
+{ id:9,  title:"试用期工资标准",                  scenarios:["salary","work"], tags:[{t:"salary",l:"工资报酬"},{t:"work",l:"入职签订"}],
+text:"劳动者在试用期的工资不得低于本单位相同岗位最低档工资或者劳动合同约定工资的百分之八十，并不得低于用人单位所在地的最低工资标准。" },
+
+{ id:10, title:"服务期约定",                     scenarios:["contract","work"], tags:[{t:"contract",l:"劳动合同"},{t:"work",l:"入职签订"}],
+text:"用人单位为劳动者提供专项培训费用，对其进行专业技术培训的，可以与该劳动者订立协议，约定服务期。\n劳动者违反服务期约定的，应当按照约定向用人单位支付违约金。违约金的数额不得超过用人单位提供的培训费用。" },
+
+{ id:11, title:"保密义务和竞业限制",             scenarios:["contract","work"], tags:[{t:"contract",l:"劳动合同"},{t:"work",l:"入职签订"}],
+text:"对负有保密义务的劳动者，用人单位可以在劳动合同或者保密协议中与劳动者约定竞业限制条款，并约定在解除或者终止劳动合同后，在竞业限制期限内按月给予劳动者经济补偿。劳动者违反竞业限制约定的，应当按照约定向用人单位支付违约金。\n竞业限制的人员限于用人单位的高级管理人员、高级技术人员和其他负有保密义务的人员。竞业限制期限不得超过二年。" },
+
+{ id:12, title:"劳动合同必备条款",               scenarios:["contract","work"], tags:[{t:"contract",l:"劳动合同"},{t:"work",l:"入职签订"}],
+text:"劳动合同应当以书面形式订立，并具备以下条款：\n（一）用人单位的名称、住所和法定代表人或者主要负责人；\n（二）劳动者的姓名、住址和居民身份证或者其他有效身份证件号码；\n（三）劳动合同期限；\n（四）工作内容和工作地点；\n（五）工作时间和休息休假；\n（六）劳动报酬；\n（七）社会保险；\n（八）劳动保护和劳动条件；\n（九）法律、法规规定应当纳入劳动合同的其他事项。" },
+
+{ id:13, title:"劳动合同期限分类",               scenarios:["contract","work"], tags:[{t:"contract",l:"劳动合同"},{t:"work",l:"入职签订"}],
+text:"劳动合同的期限分为固定期限、无固定期限和以完成一定工作任务为期限三种。" },
+
+{ id:14, title:"无固定期限劳动合同",              scenarios:["contract","work"], tags:[{t:"contract",l:"劳动合同"},{t:"work",l:"入职签订"}],
+text:"劳动者在同一用人单位连续工作满十年以上，当事人双方同意续延劳动合同的，如果劳动者提出订立无固定期限的劳动合同，应当订立无固定期限的劳动合同。\n用人单位自用工之日起满一年不与劳动者订立书面劳动合同的，视为用人单位与劳动者已订立无固定期限劳动合同。" },
+
+{ id:15, title:"劳动合同生效",                    scenarios:["contract","work"], tags:[{t:"contract",l:"劳动合同"},{t:"work",l:"入职签订"}],
+text:"劳动合同由用人单位与劳动者协商一致，并经用人单位与劳动者在劳动合同文本上签字或者盖章生效。\n劳动合同文本由用人单位和劳动者各执一份。" },
+
+{ id:16, title:"劳动合同无效",                   scenarios:["contract","work"], tags:[{t:"contract",l:"劳动合同"},{t:"work",l:"入职签订"}],
+text:"下列劳动合同无效或者部分无效：\n（一）以欺诈、胁迫的手段或者乘人之危，使对方在违背真实意思的情况下订立或者变更劳动合同的；\n（二）用人单位免除自己的法定责任、排除劳动者权利的；\n（三）违反法律、行政法规强制性规定的。\n对劳动合同的无效或者部分无效有争议的，由劳动争议仲裁机构或者人民法院确认。\n劳动合同被确认无效，劳动者已付出劳动的，用人单位应当向劳动者支付劳动报酬。" },
+
+{ id:17, title:"工作时间标准",                   scenarios:["hours"], tags:[{t:"hours",l:"工时制度"}],
+text:"国家实行劳动者每日工作时间不超过八小时、平均每周工作时间不超过四十四小时的工时制度。" },
+
+{ id:18, title:"工作时间安排",                   scenarios:["hours"], tags:[{t:"hours",l:"工时制度"}],
+text:"用人单位应当保证劳动者每周至少休息一日。" },
+
+{ id:19, title:"法定休假日",                     scenarios:["leave","rest"], tags:[{t:"leave",l:"请假休假"},{t:"rest",l:"休息休假"}],
+text:"企业因生产特点不能实行本法第十七条、第十八条规定的，经劳动行政部门批准，可以实行其他工作和休息办法。应当依法安排劳动者在元旦、春节、国际劳动节、国庆节和法律、法规规定的其他休假节日期间休假。" },
+
+{ id:20, title:"带薪年休假",                     scenarios:["leave","rest"], tags:[{t:"leave",l:"请假休假"},{t:"rest",l:"休息休假"}],
+text:"国家实行带薪年休假制度。\n劳动者连续工作一年以上的，享受带薪年休假。具体办法由国务院规定。" },
+
+{ id:21, title:"加班时间限制",                   scenarios:["overtime","hours"], tags:[{t:"overtime",l:"加班工资"},{t:"hours",l:"工时制度"}],
+text:"用人单位由于生产经营需要，经与工会和劳动者协商后可以延长工作时间，一般每日不得超过一小时；因特殊原因需要延长工作时间的，在保障劳动者身体健康的条件下延长工作时间每日不得超过三小时，但是每月不得超过三十六小时。" },
+
+{ id:22, title:"加班报酬——平日",                scenarios:["overtime","salary"], tags:[{t:"overtime",l:"加班工资"},{t:"salary",l:"工资报酬"}],
+text:"安排劳动者延长工作时间的，支付不低于工资的百分之一百五十的工资报酬。" },
+
+{ id:23, title:"加班报酬——休息日",              scenarios:["overtime","salary"], tags:[{t:"overtime",l:"加班工资"},{t:"salary",l:"工资报酬"}],
+text:"休息日安排劳动者工作又不能安排补休的，支付不低于工资的百分之二百的工资报酬。" },
+
+{ id:24, title:"加班报酬——法定休假日",          scenarios:["overtime","salary"], tags:[{t:"overtime",l:"加班工资"},{t:"salary",l:"工资报酬"}],
+text:"法定休假日安排劳动者工作的，支付不低于工资的百分之三百的工资报酬。" },
+
+{ id:25, title:"工资分配原则",                   scenarios:["salary"], tags:[{t:"salary",l:"工资报酬"}],
+text:"工资分配应当遵循按劳分配原则，实行同工同酬。\n工资水平在经济发展的基础上逐步提高。国家对工资总量实行宏观调控。" },
+
+{ id:26, title:"最低工资标准",                   scenarios:["salary"], tags:[{t:"salary",l:"工资报酬"}],
+text:"用人单位支付劳动者的工资不得低于当地最低工资标准。" },
+
+{ id:27, title:"工资支付规定",                   scenarios:["salary"], tags:[{t:"salary",l:"工资报酬"}],
+text:"工资应当以货币形式按月支付给劳动者本人。不得克扣或者无故拖欠劳动者的工资。" },
+
+{ id:28, title:"用人单位代扣代缴",                scenarios:["salary"], tags:[{t:"salary",l:"工资报酬"}],
+text:"用人单位不得克扣劳动者工资。有下列情况之一的，用人单位可以代扣劳动者工资：\n（一）用人单位代扣代缴的个人所得税；\n（二）用人单位代扣代缴的应由劳动者个人负担的各项社会保险费用；\n（三）法院判决、裁定中要求代扣的抚养费、赡养费；\n（四）法律、法规规定可以从劳动者工资中扣除的其他费用。\n因劳动者本人原因给用人单位造成经济损失的，用人单位可按照劳动合同的约定要求其赔偿经济损失。每月扣除的部分不得超过劳动者当月工资的百分之二十。" },
+
+{ id:29, title:"工资支付保障",                   scenarios:["salary"], tags:[{t:"salary",l:"工资报酬"}],
+text:"用人单位支付劳动报酬，应当以货币形式支付，不得以实物或者有价证券替代货币支付。" },
+
+{ id:30, title:"工资支付记录保存",               scenarios:["salary"], tags:[{t:"salary",l:"工资报酬"}],
+text:"用人单位应当按照劳动合同约定和国家规定，向劳动者及时足额支付劳动报酬。\n工资支付清单须保存三年以上备查。" },
+
+{ id:31, title:"社会保险制度",                   scenarios:["social"], tags:[{t:"social",l:"社会保险"}],
+text:"国家发展社会保险事业，建立社会保险制度，设立社会保险基金，使劳动者在年老、患病、工伤、失业、生育等情况下获得帮助和补偿。" },
+
+{ id:32, title:"社会保险费缴纳",                  scenarios:["social"], tags:[{t:"social",l:"社会保险"}],
+text:"社会保险基金按照保险类型确定资金来源，逐步实行社会统筹。用人单位和劳动者必须依法参加社会保险，缴纳社会保险费。" },
+
+{ id:33, title:"劳动者享受社会保险待遇",          scenarios:["social"], tags:[{t:"social",l:"社会保险"}],
+text:"劳动者在下列情形下，依法享受社会保险待遇：\n（一）退休；（二）患病、负伤；（三）因工伤残或者患职业病；（四）失业；（五）生育。\n劳动者享受的社会保险金必须按时足额支付。" },
+
+{ id:34, title:"职业培训职责",                   scenarios:["safety"], tags:[{t:"safety",l:"劳动保护"}],
+text:"国家通过各种途径，采取各种措施，发展职业培训事业，开发劳动者的职业技能，提高劳动者素质，增强劳动者的就业能力和工作能力。" },
+
+{ id:35, title:"职业培训制度",                   scenarios:["safety"], tags:[{t:"safety",l:"劳动保护"}],
+text:"各级人民政府应当把发展职业培训纳入社会经济发展的规划，鼓励和支持有条件的企业、事业组织、社会团体和个人进行各种形式的职业培训，用人单位应当建立职业培训制度，按照国家规定提取和使用职业培训经费。\n从事技术工种的劳动者，上岗前必须经过培训。" },
+
+{ id:36, title:"劳动安全卫生制度",               scenarios:["safety"], tags:[{t:"safety",l:"劳动保护"}],
+text:"用人单位必须建立、健全劳动安全卫生制度，严格执行国家劳动安全卫生规程和标准，对劳动者进行劳动安全卫生教育，防止劳动过程中的事故，减少职业危害。" },
+
+{ id:37, title:"劳动安全卫生设施",               scenarios:["safety"], tags:[{t:"safety",l:"劳动保护"}],
+text:"劳动安全卫生设施必须符合国家规定的标准。\n新建、改建、扩建工程的劳动安全卫生设施必须与主体工程同时设计、同时施工、同时投入生产和使用。" },
+
+{ id:38, title:"特种作业资格",                   scenarios:["safety"], tags:[{t:"safety",l:"劳动保护"}],
+text:"从事特种作业的劳动者必须经过专门培训并取得特种作业资格。" },
+
+{ id:39, title:"工伤和职业病处理",               scenarios:["safety","social"], tags:[{t:"safety",l:"劳动保护"},{t:"social",l:"社会保险"}],
+text:"劳动者在劳动过程中必须严格遵守安全操作规程。\n劳动者对用人单位管理人员违章指挥、强令冒险作业，有权拒绝执行。\n国家建立伤亡事故和职业病统计报告和处理制度。" },
+
+{ id:40, title:"女职工禁忌从事的劳动",           scenarios:["safety","women"], tags:[{t:"safety",l:"劳动保护"},{t:"women",l:"女职工保护"}],
+text:"禁止安排女职工从事矿山井下、国家规定的第四级体力劳动强度的劳动和其他禁忌从事的劳动。" },
+
+{ id:41, title:"女职工经期保护",                  scenarios:["safety","women"], tags:[{t:"safety",l:"劳动保护"},{t:"women",l:"女职工保护"}],
+text:"禁止安排女职工在经期从事高处、低温、冷水作业和国家规定的第三级体力劳动强度的劳动。" },
+
+{ id:42, title:"女职工孕期保护",                  scenarios:["safety","women"], tags:[{t:"safety",l:"劳动保护"},{t:"women",l:"女职工保护"}],
+text:"禁止安排女职工在怀孕期间从事国家规定的第三级体力劳动强度的劳动和孕期禁忌从事的劳动。对怀孕七个月以上的女职工，不得安排其延长工作时间和夜班劳动。" },
+
+{ id:43, title:"女职工产假",                      scenarios:["leave","women"], tags:[{t:"leave",l:"请假休假"},{t:"women",l:"女职工保护"}],
+text:"女职工生育享受不少于九十天的产假。" },
+
+{ id:44, title:"女职工哺乳期保护",               scenarios:["safety","women"], tags:[{t:"safety",l:"劳动保护"},{t:"women",l:"女职工保护"}],
+text:"不得安排女职工在哺乳未满一周婴儿期间从事国家规定的第三级体力劳动强度的劳动和哺乳期禁忌从事的劳动，不得安排其延长工作时间和夜班劳动。" },
+
+{ id:45, title:"未成年工禁忌劳动",               scenarios:["safety"], tags:[{t:"safety",l:"劳动保护"}],
+text:"不得安排未成年工从事矿山井下、有毒有害、国家规定的第四级体力劳动强度的劳动和其他禁忌从事的劳动。" },
+
+{ id:46, title:"未成年工健康检查",               scenarios:["safety"], tags:[{t:"safety",l:"劳动保护"}],
+text:"用人单位应当对未成年工定期进行健康检查。" },
+
+{ id:47, title:"工会和职工民主管理",             scenarios:["work"], tags:[{t:"work",l:"入职签订"}],
+text:"工会代表和维护劳动者的合法权益，依法独立自主地开展活动。\n劳动者有权通过职工大会、职工代表大会或者其他形式，参与民主管理，就保护劳动者合法权益与用人单位进行平等协商。" },
+
+{ id:48, title:"集体合同",                       scenarios:["contract","work"], tags:[{t:"contract",l:"劳动合同"},{t:"work",l:"入职签订"}],
+text:"企业职工一方与用人单位通过平等协商，可以就劳动报酬、工作时间、休息休假、劳动安全卫生、保险福利等事项订立集体合同。集体合同草案应当提交职工代表大会或者全体职工讨论通过。\n集体合同由工会代表职工与企业签订；没有建立工会的企业，由职工代表与企业签订。" },
+
+{ id:49, title:"集体合同效力",                   scenarios:["contract"], tags:[{t:"contract",l:"劳动合同"}],
+text:"依法签订的集体合同对企业和全体职工具有约束力。职工个人与企业订立的劳动合同中劳动条件和劳动报酬等标准不得低于集体合同的规定。" },
+
+{ id:50, title:"劳动争议处理原则",               scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"用人单位与劳动者发生劳动争议，当事人可以依法申请调解、仲裁或者提起诉讼，也可以协商解决。\n解决劳动争议，应当根据合法、公正、及时处理的原则，依法维护劳动争议当事人的合法权益。" },
+
+{ id:51, title:"劳动争议调解组织",               scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"企业可以设立劳动争议调解委员会。\n劳动争议调解委员会由职工代表、用人单位代表和工会代表组成。劳动争议调解委员会主任由工会代表担任。" },
+
+{ id:52, title:"劳动争议仲裁委员会",              scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"县、市、市辖区应当设立劳动争议仲裁委员会。\n劳动争议仲裁委员会由劳动行政部门代表、同级工会代表、用人单位方面的代表组成。劳动争议仲裁委员会主任由劳动行政部门代表担任。" },
+
+{ id:53, title:"劳动争议仲裁管辖",               scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"劳动争议由劳动合同履行地或者用人单位所在地的劳动争议仲裁委员会管辖。双方当事人分别向劳动合同履行地和用人单位所在地的劳动争议仲裁委员会申请仲裁的，由劳动合同履行地的劳动争议仲裁委员会管辖。" },
+
+{ id:54, title:"劳动争议仲裁时效",               scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"劳动争议申请仲裁的时效期间为一年。仲裁时效期间从当事人知道或者应当知道其权利被侵害之日起计算。\n劳动关系存续期间因拖欠劳动报酬发生争议的，劳动者申请仲裁不受仲裁时效期间的限制；但是，劳动关系终止的，应当自劳动关系终止之日起一年内提出。" },
+
+{ id:55, title:"仲裁开庭程序",                   scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"劳动争议仲裁委员会受理仲裁申请后，应当在四十五日内结束仲裁裁决。案情复杂需要延期的，经批准可以延期，延长期限不得超过十五日。逾期未作出仲裁裁决的，当事人可以就该劳动争议事项向人民法院提起诉讼。" },
+
+{ id:56, title:"仲裁先行调解",                   scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"仲裁庭在作出裁决前，应当先行调解。\n调解达成协议的，仲裁庭应当制作调解书。调解书经双方当事人签收后，发生法律效力。" },
+
+{ id:57, title:"仲裁裁决效力",                   scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"当事人对仲裁裁决不服的，可以自收到仲裁裁决书之日起十五日内向人民法院提起诉讼。期满不起诉的，裁决书发生法律效力。" },
+
+{ id:58, title:"支付令",                          scenarios:["salary","dispute"], tags:[{t:"salary",l:"工资报酬"},{t:"dispute",l:"劳动争议"}],
+text:"用人单位拖欠或者未足额支付劳动报酬的，劳动者可以依法向当地人民法院申请支付令，人民法院应当依法发出支付令。" },
+
+{ id:59, title:"竞业限制补偿和限制期",            scenarios:["contract","resign"], tags:[{t:"contract",l:"劳动合同"},{t:"resign",l:"离职补偿"}],
+text:"对负有保密义务的劳动者，用人单位可以在劳动合同或者保密协议中与劳动者约定竞业限制条款，并约定在解除或者终止劳动合同后，在竞业限制期限内按月给予劳动者经济补偿。竞业限制期限不得超过二年。" },
+
+{ id:60, title:"用人单位劳动规章制度",            scenarios:["work","discipline"], tags:[{t:"work",l:"入职签订"},{t:"discipline",l:"纪律处分"}],
+text:"用人单位应当依法建立和完善劳动规章制度，保障劳动者享有劳动权利和履行劳动义务。\n用人单位在制定、修改或者决定有关劳动报酬、工作时间、休息休假、劳动安全卫生等直接涉及劳动者切身利益的规章制度时，应当经职工代表大会或者全体职工讨论，与工会或者职工代表平等协商确定。\n用人单位应当将直接涉及劳动者切身利益的规章制度公示，或者告知劳动者。" },
+
+{ id:61, title:"扣押证件及收取财物禁止",          scenarios:["work"], tags:[{t:"work",l:"入职签订"}],
+text:"用人单位招用劳动者，不得扣押劳动者的居民身份证和其他证件，不得要求劳动者提供担保或者以其他名义向劳动者收取财物。" },
+
+{ id:62, title:"二倍工资规定",                    scenarios:["work","contract","salary"], tags:[{t:"work",l:"入职签订"},{t:"contract",l:"劳动合同"},{t:"salary",l:"工资报酬"}],
+text:"建立劳动关系，应当订立书面劳动合同。\n已建立劳动关系，未同时订立书面劳动合同的，应当自用工之日起一个月内订立书面劳动合同。\n用人单位自用工之日起超过一个月不满一年未与劳动者订立书面劳动合同的，应当向劳动者每月支付二倍的工资。\n用人单位违反本法规定不与劳动者订立无固定期限劳动合同的，自应当订立无固定期限劳动合同之日起向劳动者每月支付二倍的工资。" },
+
+{ id:63, title:"劳动合同变更",                    scenarios:["contract"], tags:[{t:"contract",l:"劳动合同"}],
+text:"经当事人协商一致，劳动合同可以变更。\n变更劳动合同，应当采用书面形式。" },
+
+{ id:64, title:"用人单位即时解除权",              scenarios:["resign"], tags:[{t:"resign",l:"离职补偿"}],
+text:"劳动者有下列情形之一的，用人单位可以解除劳动合同：\n（一）在试用期间被证明不符合录用条件的；\n（二）严重违反劳动纪律或者用人单位规章制度的；\n（三）严重失职，营私舞弊，对用人单位利益造成重大损害的；\n（四）被依法追究刑事责任的。" },
+
+{ id:65, title:"用人单位预告解除权",              scenarios:["resign"], tags:[{t:"resign",l:"离职补偿"}],
+text:"有下列情形之一的，用人单位提前三十日以书面形式通知劳动者本人或者额外支付劳动者一个月工资后，可以解除劳动合同：\n（一）劳动者患病或者非因工负伤，医疗期满后，不能从事原工作也不能从事由用人单位另行安排的工作的；\n（二）劳动者不能胜任工作，经过培训或者调整工作岗位，仍不能胜任工作的；\n（三）劳动合同订立时所依据的客观情况发生重大变化，致使原劳动合同无法履行，经当事人协商不能就变更劳动合同达成协议的。" },
+
+{ id:66, title:"经济性裁员",                      scenarios:["resign"], tags:[{t:"resign",l:"离职补偿"}],
+text:"需要裁减人员二十人以上或者裁减不足二十人但占企业职工总数百分之十以上的，用人单位提前三十日向工会或者全体职工说明情况，听取意见后，裁减人员方案经向劳动行政部门报告，可以裁减人员。\n裁减人员时，应当优先留用与本单位订立较长期限的固定期限劳动合同的、与本单位订立无固定期限劳动合同的、家庭无其他就业人员有需要扶养的老人或者未成年人的。\n用人单位依据规定裁减人员，在六个月内录用人员的，应当优先通知被裁减的人员。" },
+
+{ id:67, title:"用人单位不得解除劳动合同的情形",  scenarios:["resign","safety"], tags:[{t:"resign",l:"离职补偿"},{t:"safety",l:"劳动保护"}],
+text:"劳动者有下列情形之一的，用人单位不得依照本法第四十条、第四十一条的规定解除劳动合同：\n（一）从事接触职业病危害作业的劳动者未进行离岗前职业健康检查，或者疑似职业病病人在诊断或者医学观察期间的；\n（二）在本单位患职业病或者因工负伤并被确认丧失或者部分丧失劳动能力的；\n（三）患病或者非因工负伤，在规定的医疗期内的；\n（四）女职工在孕期、产假、哺乳期内的；\n（五）在本单位连续工作满十五年，且距法定退休年龄不足五年的；\n（六）法律、行政法规规定的其他情形。" },
+
+{ id:68, title:"劳动者提前通知解除劳动合同",        scenarios:["resign"], tags:[{t:"resign",l:"离职补偿"}],
+text:"劳动者提前三十日以书面形式通知用人单位，可以解除劳动合同。劳动者在试用期内提前三日通知用人单位，可以解除劳动合同。" },
+
+{ id:69, title:"劳动者即时解除权",                scenarios:["resign","safety"], tags:[{t:"resign",l:"离职补偿"},{t:"safety",l:"劳动保护"}],
+text:"用人单位有下列情形之一的，劳动者可以解除劳动合同：\n（一）未按照劳动合同约定提供劳动保护或者劳动条件的；\n（二）未及时足额支付劳动报酬的；\n（三）未依法为劳动者缴纳社会保险费的；\n（四）用人单位的规章制度违反法律、法规的规定，损害劳动者权益的；\n（五）因本法第二十六条第一款规定的情形致使劳动合同无效的。\n用人单位以暴力、威胁或者非法限制人身自由的手段强迫劳动者劳动的，或者用人单位违章指挥、强令冒险作业危及劳动者人身安全的，劳动者可以立即解除劳动合同，不需事先告知用人单位。" },
+
+{ id:70, title:"经济补偿适用范围",                scenarios:["resign","salary"], tags:[{t:"resign",l:"离职补偿"},{t:"salary",l:"工资报酬"}],
+text:"有下列情形之一的，用人单位应当向劳动者支付经济补偿：\n（一）劳动者依照本法第三十八条规定解除劳动合同的；\n（二）用人单位依照本法第三十六条、第三十七条向劳动者提出解除劳动合同并与劳动者协商一致解除劳动合同的；\n（三）用人单位依照本法第四十条规定解除劳动合同的；\n（四）用人单位依照本法第四十一条第一款规定解除劳动合同的；\n（五）除用人单位维持或者提高劳动合同约定条件续订劳动合同，劳动者不同意续订的情形外，劳动合同期满终止的；\n（六）用人单位被依法宣告破产或者决定提前解散而终止劳动合同的。" },
+
+{ id:71, title:"经济补偿计算标准",                scenarios:["resign","salary"], tags:[{t:"resign",l:"离职补偿"},{t:"salary",l:"工资报酬"}],
+text:"经济补偿按劳动者在本单位工作的年限，每满一年支付一个月工资的标准向劳动者支付。六个月以上不满一年的，按一年计算；不满六个月的，向劳动者支付半个月工资的经济补偿。\n劳动者月工资高于用人单位所在直辖市、设区的市级人民政府公布的本地区上年度职工月平均工资三倍的，向其支付经济补偿的标准按职工月平均工资三倍的数额支付，向其支付经济补偿的年限最高不超过十二年。\n本条所称月工资是指劳动者在劳动合同解除或者终止前十二个月的平均工资。" },
+
+{ id:72, title:"违法解除或终止劳动合同赔偿金",    scenarios:["resign","salary"], tags:[{t:"resign",l:"离职补偿"},{t:"salary",l:"工资报酬"}],
+text:"用人单位违反本法规定解除或者终止劳动合同，劳动者要求继续履行劳动合同的，用人单位应当继续履行；劳动者不要求继续履行劳动合同或者劳动合同已经不能继续履行的，用人单位应当依照本法第八十七条规定支付赔偿金。" },
+
+{ id:73, title:"劳动合同终止情形",                scenarios:["resign","contract"], tags:[{t:"resign",l:"离职补偿"},{t:"contract",l:"劳动合同"}],
+text:"有下列情形之一的，劳动合同终止：\n（一）劳动合同期满的；\n（二）劳动者开始依法享受基本养老保险待遇的；\n（三）劳动者死亡，或者被人民法院宣告死亡或者宣告失踪的；\n（四）用人单位被依法宣告破产的；\n（五）用人单位被吊销营业执照、责令关闭、撤销或者用人单位决定提前解散的；\n（六）法律、行政法规规定的其他情形。" },
+
+{ id:74, title:"劳动合同期满特殊保护",           scenarios:["resign","contract"], tags:[{t:"resign",l:"离职补偿"},{t:"contract",l:"劳动合同"}],
+text:"劳动合同期满，有本法第四十二条规定情形之一的，劳动合同应当续延至相应的情形消失时终止。但是，本法第四十二条第二项规定丧失或者部分丧失劳动能力劳动者的劳动合同的终止，按照国家有关工伤保险的规定执行。" },
+
+{ id:75, title:"非全日制用工",                    scenarios:["work","salary"], tags:[{t:"work",l:"入职签订"},{t:"salary",l:"工资报酬"}],
+text:"非全日制用工，是指以小时计酬为主，劳动者在同一用人单位一般平均每日工作时间不超过四小时，每周工作时间累计不超过二十四小时的用工形式。\n从事非全日制用工的劳动者可以与一个或者一个以上用人单位订立劳动合同。\n非全日制用工双方当事人不得约定试用期。\n非全日制用工小时计酬标准不得低于用人单位所在地人民政府规定的最低小时工资标准。\n非全日制用工劳动报酬结算支付周期最长不得超过十五日。" },
+
+{ id:76, title:"劳务派遣",                        scenarios:["work","contract"], tags:[{t:"work",l:"入职签订"},{t:"contract",l:"劳动合同"}],
+text:"劳务派遣一般在临时性、辅助性或者替代性的工作岗位上实施。\n劳务派遣单位应当与被派遣劳动者订立二年以上的固定期限劳动合同，按月支付劳动报酬；被派遣劳动者在无工作期间，劳务派遣单位应当按照所在地人民政府规定的最低工资标准，向其按月支付报酬。\n用工单位不得将连续用工期限分割订立数个短期劳务派遣协议。\n劳务派遣单位和用工单位不得向被派遣劳动者收取费用。" },
+
+{ id:77, title:"劳动行政部门职责",                scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"县级以上各级人民政府劳动行政部门依法对用人单位遵守劳动法律、法规的情况进行监督检查，对违反劳动法律、法规的行为有权制止，并责令改正。\n县级以上各级人民政府劳动行政部门监督检查人员执行公务，必须出示证件，秉公执法并依法行事。" },
+
+{ id:78, title:"相关部门的配合义务",              scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"劳动行政部门以及有关部门应当支持、协助工会组织的工作。" },
+
+{ id:79, title:"对违反劳动法律行为的检举",        scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"任何组织或者个人对违反劳动法律、法规的行为均有权检举和控告。有关部门应当依法及时处理。" },
+
+{ id:80, title:"用人单位赔偿责任",                scenarios:["salary","dispute"], tags:[{t:"salary",l:"工资报酬"},{t:"dispute",l:"劳动争议"}],
+text:"用人单位有下列行为之一的，由劳动行政部门责令限期支付劳动者的工资报酬；逾期不支付的，责令用人单位按应付金额百分之五十以上百分之一百以下的标准向劳动者加付赔偿金：\n（一）克扣或者无故拖欠劳动者工资的；\n（二）拒不支付劳动者延长工作时间工资报酬的；\n（三）低于当地最低工资标准支付劳动者工资的；\n（四）解除劳动合同后，未依照本法规定给予劳动者经济补偿的。" },
+
+{ id:81, title:"强迫劳动的法律责任",              scenarios:["work","dispute"], tags:[{t:"work",l:"入职签订"},{t:"dispute",l:"劳动争议"}],
+text:"用人单位违反本法规定，以暴力、威胁或者非法限制人身自由的手段强迫劳动的，由公安机关对责任人员处以十五日以下拘留、罚款或者警告；构成犯罪的，依法追究刑事责任；给劳动者造成损害的，应当承担赔偿责任。" },
+
+{ id:82, title:"侮辱体罚的法律责任",              scenarios:["work","dispute"], tags:[{t:"work",l:"入职签订"},{t:"dispute",l:"劳动争议"}],
+text:"侮辱、体罚、殴打、非法搜查和拘禁劳动者的，由公安机关对责任人员处以十五日以下拘留、罚款或者警告；构成犯罪的，依法追究刑事责任。" },
+
+{ id:83, title:"强令冒险作业的法律责任",          scenarios:["safety","dispute"], tags:[{t:"safety",l:"劳动保护"},{t:"dispute",l:"劳动争议"}],
+text:"用人单位强令劳动者违章冒险作业，发生重大伤亡事故，造成严重后果的，对责任人员依法追究刑事责任。" },
+
+{ id:84, title:"违反女职工和未成年工保护的法律责任",scenarios:["safety","women","dispute"], tags:[{t:"safety",l:"劳动保护"},{t:"women",l:"女职工保护"},{t:"dispute",l:"劳动争议"}],
+text:"用人单位违反本法对女职工和未成年工的保护规定，侵害其合法权益的，由劳动行政部门责令改正，并处以罚款；对女职工或者未成年工造成损害的，应当承担赔偿责任。" },
+
+{ id:85, title:"违反延长工时规定的法律责任",      scenarios:["overtime","hours","dispute"], tags:[{t:"overtime",l:"加班工资"},{t:"hours",l:"工时制度"},{t:"dispute",l:"劳动争议"}],
+text:"用人单位违反本法规定，延长劳动者工作时间的，由劳动行政部门给予警告，责令改正，并可以处以罚款。" },
+
+{ id:86, title:"违规职业健康检查的法律责任",      scenarios:["safety","dispute"], tags:[{t:"safety",l:"劳动保护"},{t:"dispute",l:"劳动争议"}],
+text:"用人单位违反本法规定，有下列行为之一的，由劳动行政部门责令改正，并处以罚款；情节严重的，依照有关法律、行政法规规定给予行政处罚：\n（一）安排未经职业健康检查的劳动者从事接触职业病危害作业的；\n（二）安排有职业禁忌的劳动者从事所禁忌作业的；\n（三）未按照规定安排职业病病人、疑似职业病病人进行诊治的。" },
+
+{ id:87, title:"违法解除劳动合同的赔偿金标准",    scenarios:["resign","salary"], tags:[{t:"resign",l:"离职补偿"},{t:"salary",l:"工资报酬"}],
+text:"用人单位违反本法规定解除或者终止劳动合同的，应当依照本法第四十七条规定的经济补偿标准的二倍向劳动者支付赔偿金。" },
+
+{ id:88, title:"招用未解除劳动合同者的连带责任",  scenarios:["work","contract"], tags:[{t:"work",l:"入职签订"},{t:"contract",l:"劳动合同"}],
+text:"用人单位招用与其他用人单位尚未解除或者终止劳动合同的劳动者，给其他用人单位造成损失的，应当承担连带赔偿责任。" },
+
+{ id:89, title:"违反保密义务的法律责任",          scenarios:["contract","dispute"], tags:[{t:"contract",l:"劳动合同"},{t:"dispute",l:"劳动争议"}],
+text:"劳动者违反本法规定解除劳动合同，或者违反劳动合同中约定的保密义务或者竞业限制，给用人单位造成损失的，应当承担赔偿责任。" },
+
+{ id:90, title:"劳务派遣单位的法律责任",          scenarios:["work","contract"], tags:[{t:"work",l:"入职签订"},{t:"contract",l:"劳动合同"}],
+text:"劳务派遣单位违反本法规定的，由劳动行政部门责令限期改正；情节严重的，以每人一千元以上五千元以下的标准处以罚款，对劳务派遣单位，吊销其劳务派遣业务经营许可证。用工单位违反有关劳务派遣规定的，以每人五千元以上一万元以下的标准处以罚款。" },
+
+{ id:91, title:"不具备合法经营资格的主体用工",    scenarios:["work"], tags:[{t:"work",l:"入职签订"}],
+text:"无营业执照或者未经依法登记、备案的单位以及被依法吊销营业执照或者撤销登记、备案的单位招用的劳动者，劳动者有权依法向用人单位要求支付劳动报酬、经济补偿、赔偿金；给劳动者造成损害的，该单位出资人、经营人应当承担连带赔偿责任。" },
+
+{ id:92, title:"个人承包经营招用劳动者的责任",    scenarios:["work"], tags:[{t:"work",l:"入职签订"}],
+text:"个人承包经营违反本法规定招用劳动者，给劳动者造成损害的，发包的组织与个人承包经营者承担连带赔偿责任。" },
+
+{ id:93, title:"劳动行政部门工作人员法律责任",    scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"劳动行政部门或者有关行政部门的工作人员滥用职权、玩忽职守、徇私舞弊，构成犯罪的，依法追究刑事责任；不构成犯罪的，给予行政处分。\n国家工作人员和社会保险经办机构工作人员挪用社会保险基金，构成犯罪的，依法追究刑事责任。" },
+
+{ id:94,  title:"刑事责任",                       scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"违反本法规定，构成犯罪的，依法追究刑事责任。" },
+
+{ id:95,  title:"职业病分类和目录",               scenarios:["safety","social"], tags:[{t:"safety",l:"劳动保护"},{t:"social",l:"社会保险"}],
+text:"职业病分类和目录由国务院卫生行政部门会同国务院劳动保障行政部门规定、调整并公布。\n职业病病人依法享有国家规定的职业病待遇。用人单位应当按照国家有关规定，安排职业病病人进行治疗、康复和定期检查。" },
+
+{ id:96,  title:"劳动合同文本交付义务",           scenarios:["contract","work"], tags:[{t:"contract",l:"劳动合同"},{t:"work",l:"入职签订"}],
+text:"劳动合同文本由用人单位和劳动者各执一份。\n用人单位应当将劳动合同文本交付劳动者，不得扣押劳动者的居民身份证和其他证件。" },
+
+{ id:97,  title:"劳动者对劳动过程的了解权",       scenarios:["work"], tags:[{t:"work",l:"入职签订"}],
+text:"用人单位与劳动者订立劳动合同，应当如实告知劳动者工作内容、工作条件、工作地点、职业危害、安全生产状况、劳动报酬，以及劳动者要求了解的其他情况。" },
+
+{ id:98,  title:"附则——其他法律适用",             scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"本法自1995年1月1日起施行。\n本法施行前已建立劳动关系，尚未订立书面劳动合同的，应当自本法施行之日起一个月内订立。\n本法施行之日存续的劳动合同在本法施行后解除或者终止，应当支付经济补偿的，经济补偿年限自本法施行之日起计算。" },
+
+{ id:99,  title:"事业单位聘用制度",               scenarios:["work","contract"], tags:[{t:"work",l:"入职签订"},{t:"contract",l:"劳动合同"}],
+text:"事业单位与实行聘用制的工作人员订立、履行、变更、解除或者终止劳动合同，法律、行政法规或者国务院另有规定的，依照其规定；未作规定的，依照本法有关规定执行。" },
+
+{ id:100, title:"施行日期",                       scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"本法自1995年1月1日起施行。1994年7月5日第八届全国人民代表大会常务委员会第八次会议通过的《中华人民共和国劳动法》同时废止。" },
+
+{ id:101, title:"职业病分类和目录",              scenarios:["safety","social"], tags:[{t:"safety",l:"劳动保护"},{t:"social",l:"社会保险"}],
+text:"职业病分类和目录由国务院卫生行政部门会同国务院劳动保障行政部门规定、调整并公布。" },
+
+{ id:102, title:"劳动安全卫生设施标准和促进就业职责",  scenarios:["safety","work"], tags:[{t:"safety",l:"劳动保护"},{t:"work",l:"入职签订"}],
+text:"劳动安全卫生设施必须符合国家规定的标准。\n各级人民政府和有关部门应当采取措施，保障劳动者在生产过程中的安全与健康。\n用人单位应当建立职工名册备查。" },
+
+{ id:103, title:"建筑业餐饮服务业及劳动合同交付义务",  scenarios:["work","contract"], tags:[{t:"work",l:"入职签订"},{t:"contract",l:"劳动合同"}],
+text:"建筑业和餐饮服务业的用人单位，应当依法建立和完善劳动安全卫生制度，保障劳动者的安全和健康。\n劳动合同文本由用人单位和劳动者各执一份。用人单位应当将劳动合同文本交付劳动者，不得扣押劳动者的居民身份证和其他证件。" },
+
+{ id:104, title:"劳动者知情权",                   scenarios:["work"], tags:[{t:"work",l:"入职签订"}],
+text:"用人单位与劳动者订立劳动合同，应当如实告知劳动者工作内容、工作条件、工作地点、职业危害、安全生产状况、劳动报酬，以及劳动者要求了解的其他情况。" },
+
+{ id:105, title:"服务期与违约金约定",             scenarios:["contract","work"], tags:[{t:"contract",l:"劳动合同"},{t:"work",l:"入职签订"}],
+text:"用人单位为劳动者提供专项培训费用，对其进行专业技术培训的，可以与该劳动者订立协议，约定服务期。\n劳动者违反服务期约定的，应当按照约定向用人单位支付违约金。违约金的数额不得超过用人单位提供的培训费用。\n用人单位与劳动者约定违约金、赔偿金等条款，应当符合法律、法规的规定。\n除本法第二十二条和第二十三条规定的情形外，用人单位不得与劳动者约定由劳动者承担违约金。" },
+
+{ id:106, title:"附则——其他法律适用",           scenarios:["dispute"], tags:[{t:"dispute",l:"劳动争议"}],
+text:"本法自1995年1月1日起施行。\n本法施行前已建立劳动关系，尚未订立书面劳动合同的，应当自本法施行之日起一个月内订立。\n本法施行之日存续的劳动合同在本法施行后解除或者终止，应当支付经济补偿的，经济补偿年限自本法施行之日起计算；本法施行前按照当时有关规定，用人单位应当向劳动者支付经济补偿的，按照当时有关规定执行。" },
+
+{ id:107, title:"事业单位聘用制度",              scenarios:["work","contract"], tags:[{t:"work",l:"入职签订"},{t:"contract",l:"劳动合同"}],
+text:"事业单位与实行聘用制的工作人员订立、履行、变更、解除或者终止劳动合同，法律、行政法规或者国务院另有规定的，依照其规定；未作规定的，依照本法有关规定执行。" }
+];
+
+// ===== 颜色映射 =====
+const TAG_C = {
+  work:{bg:'#ecfdf5',text:'#166534'},contract:{bg:'#f3e8ff',text:'#6b21a8'},
+  hours:{bg:'#ede9fe',text:'#4c1d95'},overtime:{bg:'#fff7ed',text:'#9a3412'},
+  leave:{bg:'#eff6ff',text:'#1e40af'},salary:{bg:'#fefce8',text:'#854d0e'},
+  social:{bg:'#f0fdfa',text:'#115e59'},safety:{bg:'#f0fdf4',text:'#14532d'},
+  resign:{bg:'#fff1f2',text:'#9f1239'},dispute:{bg:'#fdf4ff',text:'#86198f'},
+  discipline:{bg:'#f5f5f4',text:'#44403c'},rest:{bg:'#ecfeff',text:'#0e7490'},
+  women:{bg:'#fdf2f8',text:'#9d174d'}
+};
+
+// ===== 模糊搜索 =====
+function fuzzyMatch(text, query) {
+  text = text.toLowerCase();
+  query = query.toLowerCase().trim();
+  if (!query) return true;
+  const words = query.split(/\s+/);
+  return words.every(word => {
+    if (!word) return true;
+    if (text.includes(word)) return true;
+    let ti = 0;
+    for (const ch of word) {
+      const idx = text.indexOf(ch, ti);
+      if (idx === -1) return false;
+      ti = idx + 1;
+    }
+    return true;
+  });
+}
+
+function hl(text, query) {
+  if (!query || !query.trim()) return text;
+  const words = query.trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return text;
+  let r = text;
+  words.forEach(w => {
+    const re = new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi');
+    r = r.replace(re, m => `<mark>${m}</mark>`);
+  });
+  return r;
+}
+
+function tagHtml(tags) {
+  return tags.map(t => {
+    const c = TAG_C[t.t] || {bg:'#f5f5f5',text:'#666'};
+    return `<span class="tag" style="background:${c.bg};color:${c.text}">${t.l}</span>`;
+  }).join('');
+}
+
+// ===== 渲染 =====
+let currentFilter = 'all';
+let currentQuery = '';
+
+function render() {
+  const q = currentQuery;
+  const filtered = lawData.filter(item => {
+    const matchFilter = currentFilter === 'all' || item.scenarios.includes(currentFilter);
+    const matchQ = fuzzyMatch(item.title + ' ' + item.text, q);
+    return matchFilter && matchQ;
+  });
+
+  // 更新计数
+  document.getElementById('resultLabel').textContent =
+    (q || currentFilter !== 'all')
+      ? `匹配 ${filtered.length} 条`
+      : `共 ${lawData.length} 条`;
+
+  // 提示条
+  document.getElementById('hintBar').classList.toggle('hide', !!q || currentFilter !== 'all');
+
+  const list = document.getElementById('articlesList');
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="no-results"><div class="icon">🔍</div><p>未找到匹配结果</p><p style="font-size:0.85rem;margin-top:0.3rem">试试其他关键词</p></div>`;
+    return;
+  }
+
+  const hasQuery = q || currentFilter !== 'all';
+
+  list.innerHTML = filtered.map((item, i) => {
+    const tags = tagHtml(item.tags);
+    const compact = `
+      <div class="item-compact">
+        <div class="item-num">
+          <span class="l1">第</span><span class="l2">${item.id}</span><span class="l1">条</span>
+        </div>
+        <div>
+          <div class="item-title">${hl(item.title, q)}</div>
+          <div class="item-tags">${q ? tags : tags}</div>
+        </div>
+      </div>`;
+
+    const expanded = `<div class="item-body"><div class="item-text">${hl(item.text, q)}</div></div>`;
+
+    return `<div class="item ${hasQuery ? 'has-body' : ''}" style="animation-delay:${Math.min(i,30)*0.015}s">
+      ${compact}
+      ${hasQuery ? expanded : ''}
+    </div>`;
+  }).join('');
+}
+
+// 场景筛选
+document.getElementById('filters').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  document.querySelectorAll('#filters button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  render();
+});
+
+// 搜索
+let timer;
+const input = document.getElementById('searchInput');
+const clearBtn = document.getElementById('clearBtn');
+
+input.addEventListener('input', () => {
+  currentQuery = input.value;
+  clearBtn.classList.toggle('show', !!currentQuery);
+  clearTimeout(timer);
+  timer = setTimeout(render, 160);
+});
+
+clearBtn.addEventListener('click', () => {
+  input.value = '';
+  currentQuery = '';
+  clearBtn.classList.remove('show');
+  render();
+  input.focus();
+});
+
+// 排序
+document.getElementById('sortSelect').addEventListener('change', e => {
+  if (e.target.value === 'number') {
+    lawData.sort((a, b) => a.id - b.id);
+  }
+  render();
+});
+
+// 初始
+render();
+
+// ===== 鼠标跟随光 =====
+(function() {
+  const layer = document.getElementById('spotlight');
+  const orb1 = layer.querySelector('.orb-1');
+  const orb2 = layer.querySelector('.orb-2');
+  let mx = 50, my = 50;
+  let tx = mx, ty = my;
+
+  document.addEventListener('mousemove', e => {
+    tx = (e.clientX / window.innerWidth) * 100;
+    ty = (e.clientY / window.innerHeight) * 100;
+  });
+
+  function tick() {
+    mx += (tx - mx) * 0.08;
+    my += (ty - my) * 0.08;
+    const x = mx + '%', y = my + '%';
+    layer.style.setProperty('--mx', x);
+    layer.style.setProperty('--my', y);
+    orb1.style.left = x; orb1.style.top = y;
+    orb2.style.left = `calc(${x} - 175px)`; orb2.style.top = `calc(${y} - 175px)`;
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>
