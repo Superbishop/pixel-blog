@@ -1,92 +1,827 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的像素博客</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bishop — Live and learn.</title>
+  <meta name="description" content="Bishop's pixel blog — Live and learn.">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="https://Superbishop.github.io/favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    /* ═══════════════════════════════════════════
+       APPLE DESIGN TOKENS (HIG-inspired)
+    ═══════════════════════════════════════════ */
+    :root {
+      --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+      --color-bg: #ffffff;
+      --color-bg-secondary: #f5f5f7;
+      --color-bg-tertiary: #e8e8ed;
+      --color-text: #1d1d1f;
+      --color-text-secondary: #86868b;
+      --color-text-tertiary: #acacb0;
+      --color-accent: #0071e3;
+      --color-accent-hover: #0077ED;
+      --color-border: rgba(0,0,0,0.08);
+      --color-glass: rgba(255,255,255,0.72);
+      --color-glass-border: rgba(255,255,255,0.5);
+      --color-pixel: #34C759;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
+      --shadow-xl: 0 24px 60px rgba(0,0,0,0.16);
+
+      --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+      --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+
+      --nav-height: 56px;
+      --content-max: 980px;
+      --content-padding: 24px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-bg: #000000;
+        --color-bg-secondary: #0a0a0a;
+        --color-bg-tertiary: #1c1c1e;
+        --color-text: #f5f5f7;
+        --color-text-secondary: #98989d;
+        --color-text-tertiary: #636366;
+        --color-border: rgba(255,255,255,0.08);
+        --color-glass: rgba(29,29,31,0.78);
+        --color-glass-border: rgba(255,255,255,0.12);
+      }
+    }
+
+    /* ═══════════════════════════════════════════
+       PIXEL GRID BACKGROUND
+    ═══════════════════════════════════════════ */
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      color: var(--color-text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(52,199,89,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(52,199,89,0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ═══════════════════════════════════════════
+       NAVIGATION (Apple Glass Nav)
+    ═══════════════════════════════════════════ */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-height);
+      z-index: 100;
+      transition: all 0.3s var(--ease-apple);
+    }
+
+    .nav.scrolled {
+      background: var(--color-glass);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--color-border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-inner {
+      max-width: var(--content-max);
+      margin: 0 auto;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--content-padding);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--color-text);
+    }
+
+    .nav-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #34C759, #0071e3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+      image-rendering: pixelated;
+      box-shadow: 0 0 0 2px var(--color-border);
+    }
+
+    .nav-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-link {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s var(--ease-apple);
+    }
+
+    .nav-link:hover {
+      color: var(--color-text);
+      background: var(--color-bg-secondary);
+    }
+
+    /* ═══════════════════════════════════════════
+       HERO SECTION
+    ═══════════════════════════════════════════ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px var(--content-padding) 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--color-pixel);
+      margin-bottom: 16px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: reveal 0.6s var(--ease-spring) 0.2s forwards;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(48px, 8vw, 96px);
+      font-weight: 700;
+      letter-spacing: -3px;
+      line-height: 1.05;
+      color: var(--color-text);
+      margin-bottom: 20px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: reveal 0.8s var(--ease-spring) 0.35s forwards;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, #34C759 0%, #0071e3 50%, #AF52DE 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-family: var(--font-display);
+      font-size: clamp(18px, 3vw, 26px);
+      font-weight: 400;
+      color: var(--color-text-secondary);
+      letter-spacing: -0.3px;
+      margin-bottom: 40px;
+      opacity: 0;
+      transform: translateY(16px);
+      animation: reveal 0.8s var(--ease-spring) 0.5s forwards;
+    }
+
+    /* Pixel decorative blocks */
+    .pixel-row {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: reveal 0.6s var(--ease-spring) 0.65s forwards;
+    }
+
+    .pixel-block {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      animation: pixel-bounce 2s ease-in-out infinite;
+    }
+    .pixel-block:nth-child(1) { background: #34C759; animation-delay: 0s; }
+    .pixel-block:nth-child(2) { background: #0071e3; animation-delay: 0.1s; }
+    .pixel-block:nth-child(3) { background: #AF52DE; animation-delay: 0.2s; }
+    .pixel-block:nth-child(4) { background: #FF9500; animation-delay: 0.3s; }
+    .pixel-block:nth-child(5) { background: #FF3B30; animation-delay: 0.4s; }
+
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: reveal 0.6s var(--ease-spring) 0.8s forwards;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      color: var(--color-text);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      animation: reveal 0.6s var(--ease-spring) 1.2s forwards;
+    }
+
+    .scroll-hint span {
+      font-size: 11px;
+      color: var(--color-text-tertiary);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .scroll-arrow {
+      width: 20px;
+      height: 20px;
+      border-right: 2px solid var(--color-text-tertiary);
+      border-bottom: 2px solid var(--color-text-tertiary);
+      transform: rotate(45deg);
+      animation: scroll-bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes reveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pixel-bounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-6px) scale(1.1); }
+    }
+
+    @keyframes scroll-bounce {
+      0%, 100% { opacity: 0.3; transform: rotate(45deg) translateY(0); }
+      50% { opacity: 1; transform: rotate(45deg) translateY(4px); }
+    }
+
+    /* ═══════════════════════════════════════════
+       SECTION HEADER
+    ═══════════════════════════════════════════ */
+    .section {
+      max-width: var(--content-max);
+      margin: 0 auto;
+      padding: 0 var(--content-padding) 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+      color: var(--color-text);
+    }
+
+    .section-count {
+      font-size: 13px;
+      color: var(--color-text-tertiary);
+    }
+
+    /* ═══════════════════════════════════════════
+       POST CARDS (Apple Card Style)
+    ═══════════════════════════════════════════ */
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .post-card {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s var(--ease-apple);
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateY(24px);
+    }
+
+    .post-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .post-card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-4px);
+      border-color: transparent;
+    }
+
+    .post-card.featured {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      min-height: 280px;
+    }
+
+    .post-card.featured .post-img {
+      width: 50%;
+      padding-top: 0;
+      border-radius: 0;
+      min-height: 280px;
+    }
+
+    .post-card.featured .post-body {
+      padding: 40px;
+      justify-content: center;
+    }
+
+    .post-card.featured .post-title {
+      font-size: 28px;
+      letter-spacing: -0.8px;
+    }
+
+    .post-img {
+      width: 100%;
+      padding-top: 56.25%;
+      background: var(--color-bg-secondary);
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .post-img::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.06) 100%);
+    }
+
+    .post-img img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s var(--ease-apple);
+    }
+
+    .post-card:hover .post-img img {
+      transform: scale(1.04);
+    }
+
+    .post-img-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      color: var(--color-text-tertiary);
+    }
+
+    .post-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .post-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--color-pixel);
+    }
+
+    .post-tag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--color-pixel);
+      border-radius: 2px;
+    }
+
+    .post-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      line-height: 1.3;
+      color: var(--color-text);
+    }
+
+    .post-date {
+      font-size: 13px;
+      color: var(--color-text-tertiary);
+    }
+
+    .post-arrow {
+      margin-top: auto;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-accent);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: all 0.25s var(--ease-apple);
+    }
+
+    .post-card:hover .post-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ═══════════════════════════════════════════
+       ABOUT SECTION
+    ═══════════════════════════════════════════ */
+    .about {
+      max-width: 680px;
+      margin: 0 auto 80px;
+      padding: 0 var(--content-padding);
+      position: relative;
+      z-index: 1;
+    }
+
+    .about-card {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+      box-shadow: var(--shadow-md);
+    }
+
+    .about-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #34C759, #0071e3);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: 0 0 0 4px var(--color-bg), 0 0 0 5px var(--color-border);
+    }
+
+    .about-content h2 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+
+    .about-content p {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--color-text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .about-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .about-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-accent);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-accent);
+      transition: all 0.2s var(--ease-apple);
+    }
+
+    .about-link:hover {
+      background: var(--color-accent);
+      color: #fff;
+    }
+
+    /* ═══════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════ */
+    .footer {
+      border-top: 1px solid var(--color-border);
+      padding: 32px var(--content-padding);
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-inner {
+      max-width: var(--content-max);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-copy {
+      font-size: 13px;
+      color: var(--color-text-tertiary);
+    }
+
+    .footer-copy a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+    }
+
+    .footer-copy a:hover {
+      color: var(--color-accent);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      color: var(--color-text-tertiary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-link:hover {
+      color: var(--color-text);
+    }
+
+    /* ═══════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .hero { padding: 100px 20px 60px; }
+      .hero-stats { gap: 24px; }
+      .stat-number { font-size: 24px; }
+      .post-card.featured { flex-direction: column; }
+      .post-card.featured .post-img { width: 100%; min-height: 200px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+      .post-card.featured .post-body { padding: 24px; }
+      .about-card { flex-direction: column; gap: 20px; }
+      .nav-links { gap: 4px; }
+      .nav-link { padding: 6px 10px; font-size: 12px; }
+      .footer-inner { flex-direction: column; text-align: center; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="avatar">
-                <img src="avatar.png" alt="头像" width="80" height="80">
-            </div>
-            <h1 class="site-title">我的像素世界</h1>
-            <nav class="nav">
-                <a href="index.html" class="nav-link active">首页</a>
-                <a href="docker-tutorial.html" class="nav-link">🐳 Docker 教程</a>
-                <a href="about.html" class="nav-link">关于我</a>
-                <a href="contact.html" class="nav-link">联系</a>
-            </nav>
-        </header>
 
-        <!-- Main Content -->
-        <main class="main">
-            <div class="intro">
-                <h2>欢迎来到我的像素世界</h2>
-                <p>这里是我在网络上的小小角落，记录着我的思考、创作和日常。</p>
-                <div class="social-links">
-                    <a href="#" class="social-link">GitHub</a>
-                    <a href="#" class="social-link">Twitter</a>
-                    <a href="#" class="social-link">Email</a>
-                </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <!-- Featured -->
-            <section class="posts">
-                <h2 class="section-title">精选内容</h2>
-
-                <article class="post" style="border-left: 3px solid #58a6ff; background: rgba(88,166,255,0.05);">
-                    <div class="post-header">
-                        <span class="post-date">2026-04-16</span>
-                        <span style="background: #58a6ff; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">互动教程</span>
-                        <h3 class="post-title">🐳 Docker 完全指南</h3>
-                    </div>
-                    <p class="post-excerpt">从零掌握容器技术！包含互动式终端模拟器、Dockerfile 语法高亮编辑器、随堂测验和命令速查表。边学边练，高效入门。</p>
-                    <a href="docker-tutorial.html" class="read-more">开始学习 →</a>
-                </article>
-
-                <article class="post">
-                    <div class="post-header">
-                        <span class="post-date">2024-01-15</span>
-                        <h3 class="post-title">像素艺术入门指南</h3>
-                    </div>
-                    <p class="post-excerpt">像素艺术是一种独特的数字艺术形式，起源于早期的电子游戏时代。本文将带你了解像素艺术的基础知识...</p>
-                    <a href="post-1.html" class="read-more">阅读全文 →</a>
-                </article>
-
-                <article class="post">
-                    <div class="post-header">
-                        <span class="post-date">2024-01-10</span>
-                        <h3 class="post-title">复古游戏的魅力</h3>
-                    </div>
-                    <p class="post-excerpt">为什么80年代的电子游戏至今仍然吸引着玩家？让我们探讨复古游戏文化...</p>
-                    <a href="post-2.html" class="read-more">阅读全文 →</a>
-                </article>
-
-                <article class="post">
-                    <div class="post-header">
-                        <span class="post-date">2024-01-05</span>
-                        <h3 class="post-title">我的创作工具箱</h3>
-                    </div>
-                    <p class="post-excerpt">分享我在创作过程中使用的工具和软件，从绘画到编程...</p>
-                    <a href="post-3.html" class="read-more">阅读全文 →</a>
-                </article>
-            </section>
-        </main>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="divider"></div>
-            <p>&copy; 2024 我的像素博客. All rights reserved.</p>
-            <p class="footer-note">使用像素构建，用心创作</p>
-        </footer>
+  <!-- NAVIGATION -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">
+        <div class="nav-avatar">B</div>
+        <span class="nav-title">Bishop</span>
+      </a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">首页</a>
+        <a href="/archives" class="nav-link">归档</a>
+        <a href="/tags" class="nav-link">标签</a>
+        <a href="/post/about" class="nav-link">关于</a>
+      </div>
     </div>
+  </nav>
 
-    <script src="script.js"></script>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">// Bishop's Blog</div>
+    <h1 class="hero-title"><span>Live and Learn.</span></h1>
+    <p class="hero-subtitle">记录成长，保持好奇。</p>
+    <div class="pixel-row">
+      <div class="pixel-block"></div>
+      <div class="pixel-block"></div>
+      <div class="pixel-block"></div>
+      <div class="pixel-block"></div>
+      <div class="pixel-block"></div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-number">17</div>
+        <div class="stat-label">篇文章</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">5+</div>
+        <div class="stat-label">分类</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">2020</div>
+        <div class="stat-label">首发</div>
+      </div>
+    </div>
+    <div class="scroll-hint">
+      <span>Scroll</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- POSTS -->
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">最新文章</h2>
+      <span class="section-count">17 篇</span>
+    </div>
+    <div class="posts-grid" id="posts-grid">
+      <!-- 由 JavaScript 动态填充 -->
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about">
+    <div class="about-card">
+      <div class="about-avatar">B</div>
+      <div class="about-content">
+        <h2>关于 Bishop</h2>
+        <p>Stay hungry, stay foolish. 保持学习，保持进步。这个博客记录我的学习笔记和思考，涵盖技术、统计学、SQL 等领域。</p>
+        <div class="about-links">
+          <a href="https://github.com/Superbishop" class="about-link" target="_blank">
+            <i class="fab fa-github"></i> GitHub
+          </a>
+          <a href="/archives" class="about-link">
+            <i class="fas fa-archive"></i> 归档
+          </a>
+          <a href="/atom.xml" class="about-link" target="_blank">
+            <i class="fas fa-rss"></i> RSS
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-copy">
+        © 2020–2026 <a href="/">Bishop</a> · Built with ❤️
+      </div>
+      <div class="footer-links">
+        <a href="/archives" class="footer-link">归档</a>
+        <a href="/tags" class="footer-link">标签</a>
+        <a href="/post/about" class="footer-link">关于</a>
+        <a href="/atom.xml" class="footer-link">RSS</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ═══════════════════════════════════════════
+    //  NAV SCROLL EFFECT
+    // ═══════════════════════════════════════════
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    // ═══════════════════════════════════════════
+    //  ARTICLE DATA (从原博客提取)
+    // ═══════════════════════════════════════════
+    const articles = [
+      {
+        title: "2020年7-8月学习回顾",
+        date: "2020-08-11",
+        name: "2020-nian-7-8-yue-xue-xi-hui-gu",
+        img: "https://Superbishop.github.io/post-images/2020-nian-7-8-yue-xue-xi-hui-gu.jpg",
+        featured: true
+      },
+      { title: "统计学", date: "2020-08-06", name: "tong-ji-xue", img: null },
+      { title: "本奴社类太空挑战全世界的男人是谁？就来应战！", date: "2020-07-10", name: "ben-nu-she-lei-tai-tiao-zhan-quan-shi-jie-nan-ren-shi-nan-ren-jiu-jin-lai-ying-zhan-zhuan-zai", img: null },
+      { title: "近期学习回顾", date: "2020-07-05", name: "jin-qi-xue-xi-hui-gu", img: "https://Superbishop.github.io/post-images/jin-qi-xue-xi-hui-gu.jpg" },
+      { title: "《SQL必知必会》学习笔记-2020-6-7", date: "2020-06-07", name: "lesslesssql-bi-zhi-bi-hui-greatergreater-xue-xi-bi-ji-2020-6-7", img: "https://Superbishop.github.io/post-images/lesslesssql-bi-zhi-bi-hui-greatergreater-xue-xi-bi-ji-2020-6-7.png" },
+      { title: "《SQL必知必会》学习笔记-2020-6-6", date: "2020-06-06", name: "lesslesssql-bi-zhi-bi-hui-greatergreater-xue-xi-bi-ji-2020-6-6", img: "https://Superbishop.github.io/post-images/lesslesssql-bi-zhi-bi-hui-greatergreater-xue-xi-bi-ji-2020-6-6.png" },
+      { title: "《SQL必知必会》学习笔记-2020-6-5", date: "2020-06-05", name: "lesslesssql-bi-zhi-bi-hui-greatergreater-xue-xi-bi-ji-2020-6-5", img: null },
+      { title: "《SQL必知必会》学习笔记-2020-6-4", date: "2020-06-04", name: "lesslesssql-bi-zhi-bi-hui-greatergreater-xue-xi-bi-ji-2020-6-4", img: null },
+    ];
+
+    const formatDate = (dateStr) => {
+      const [y, m, d] = dateStr.split('-');
+      return `${y}年${parseInt(m)}月${parseInt(d)}日`;
+    };
+
+    const grid = document.getElementById('posts-grid');
+    articles.forEach((a, i) => {
+      const card = document.createElement('a');
+      card.href = `https://Superbishop.github.io/${a.name}/`;
+      card.className = `post-card${a.featured ? ' featured' : ''}`;
+      card.innerHTML = `
+        <div class="post-img">
+          ${a.img
+            ? `<img src="${a.img}" alt="${a.title}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=post-img-placeholder><i class=fas fa-pen-fancy></i></div>'">`
+            : `<div class="post-img-placeholder"><i class="fas fa-pen-fancy"></i></div>`
+          }
+        </div>
+        <div class="post-body">
+          <div class="post-tag">${a.date}</div>
+          <div class="post-title">${a.title}</div>
+          <div class="post-date">${formatDate(a.date)}</div>
+          <div class="post-arrow"><i class="fas fa-arrow-right"></i> 阅读全文</div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // ═══════════════════════════════════════════
+    //  INTERSECTION OBSERVER (reveal on scroll)
+    // ═══════════════════════════════════════════
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.post-card').forEach(card => observer.observe(card));
+  </script>
 </body>
 </html>
